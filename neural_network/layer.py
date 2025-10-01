@@ -23,6 +23,12 @@ class Layer:
 
         self.weights_matrix = Matrix(weights)
 
+    def set_weights(self, weights: list[list[float]]):
+        if len(weights) != self.output_size:
+            raise ValueError('The number of weight vectors must match the output size of the layer')
+
+        self.weights_matrix = Matrix(weights)
+
     def get_output(self, input_vector: Vector):
         # Add 1 for bias at the end of the input vector
         input_vector = Vector(input_vector.values + [1])

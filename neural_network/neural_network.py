@@ -20,9 +20,12 @@ class NeuralNetwork:
             self.layers.append(Layer(input_size, output_size, use_bias, activation))
 
     # Load weights from a list of matrices, accepts a list of Matrix objects
-    def load_weights(self, layer_matrices: list[list[list[float]]]):
+    def set_weights(self, layer_matrices: list[list[list[float]]]):
+        if len(layer_matrices) != len(self.layers):
+            raise ValueError('The number of layer matrices must match the number of layers in the network')
+
         for i in range(len(layer_matrices)):
-            self.layers[i].weights_matrix = Matrix(layer_matrices[i])
+            self.layers[i].set_weights(layer_matrices[i])
 
     def forward(self, input_vector: list[float] or Vector):
         if isinstance(input_vector, list):
