@@ -1,5 +1,5 @@
-from ast import Tuple
-
+import matplotlib.pyplot as plt
+from visual import render_plot, init_plot, cleanup_plot
 
 data = [
     (1.8, 42),
@@ -12,7 +12,7 @@ data = [
     (1.75, 41),
 ]
 
-learning_rate = 0.01
+learning_rate = 0.005
 
 
 def get_output(input: int, w: int, b: int):
@@ -57,6 +57,9 @@ def train(data: list[tuple[int, int]], epochs: int):
     print(f"Initial w: {w}, b: {b}")
     print(f"Initial loss: {calculate_loss(data, w, b)}")
 
+    # Initialize the plot for real-time updates
+    init_plot()
+
     for i in range(epochs):
         print(f"Epoch {i + 1}")
         slopes = calculate_slopes(data, w, b)
@@ -67,6 +70,14 @@ def train(data: list[tuple[int, int]], epochs: int):
 
         print(f"New w: {w}, b: {b}")
         print(f"New loss: {calculate_loss(data, w, b)}")
+        render_plot(data, w, b)
 
+        plt.pause(1)  # Use matplotlib's pause for better integration
+
+    # Clean up the plot when training is complete
+    cleanup_plot()
+
+
+# render_plot(data, 10, 8)
 
 train(data, 20)
