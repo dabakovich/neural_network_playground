@@ -49,9 +49,11 @@ def calculate_slopes(data: list[tuple[int, int]], w: int, b: int):
     return w_sum, b_sum
 
 
-def train(data: list[tuple[int, int]], epochs: int):
+def train(data: list[tuple[int, int]], epochs: int, threshold: int):
+    losses = []
     w = 5
     b = 2
+    current_loss = threshold
 
     print("Starting train...")
     print(f"Initial w: {w}, b: {b}")
@@ -60,17 +62,21 @@ def train(data: list[tuple[int, int]], epochs: int):
     # Initialize the plot for real-time updates
     init_plot()
 
-    for i in range(epochs):
-        print(f"Epoch {i + 1}")
+    while current_loss >= threshold:
+        print(f"Epoch {len(losses) + 1}")
         slopes = calculate_slopes(data, w, b)
         print(f"Slopes {slopes}")
 
         w = w - learning_rate * slopes[0]
         b = b - learning_rate * slopes[1]
 
+        current_loss = calculate_loss(data, w, b)
+        losses.append(current_loss)
+
         print(f"New w: {w}, b: {b}")
-        print(f"New loss: {calculate_loss(data, w, b)}")
-        render_plot(data, w, b)
+        print(f"New loss: {current_loss}")
+
+        render_plot(data, w, b, losses)
 
         plt.pause(1)  # Use matplotlib's pause for better integration
 
@@ -78,6 +84,4 @@ def train(data: list[tuple[int, int]], epochs: int):
     cleanup_plot()
 
 
-# render_plot(data, 10, 8)
-
-train(data, 20)
+train(data, 20, 0.2)
