@@ -2,20 +2,25 @@ import matplotlib.pyplot as plt
 from visual import render_plot, init_plot, cleanup_plot
 
 data = [
-    (1.8, 42),
-    (1.6, 39),
-    (1.85, 43.5),
-    (1.85, 44),
-    (1.7, 40),
-    (1.65, 40),
-    (1.9, 44),
-    (1.75, 41),
+    ([1.8], [42]),
+    ([1.6], [39]),
+    ([1.85], [43.5]),
+    ([1.85], [44]),
+    ([1.7], [40]),
+    ([1.65], [40]),
+    ([1.9], [44]),
+    ([1.75], [41]),
 ]
 
 learning_rate = 0.005
 
 
-def get_output(input: int, w: int, b: int):
+class NeuralNetwork:
+    def __init__(self, layers_config):
+        self.layers = []
+
+
+def get_output(input: list[int], w: int, b: int) -> list[int]:
     return input * w + b
 
 
