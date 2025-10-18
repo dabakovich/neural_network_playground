@@ -1,8 +1,8 @@
 import math
 
-from neural_network.helpers import get_random, outer_product
-from neural_network.matrix import Matrix
-from neural_network.vector import Vector
+from shared.helpers import get_random, outer_product
+from shared.matrix import Matrix
+from shared.vector import Vector
 
 
 class Layer:
@@ -25,7 +25,9 @@ class Layer:
 
     def set_weights(self, weights: list[list[float]]):
         if len(weights) != self.output_size:
-            raise ValueError('The number of weight vectors must match the output size of the layer')
+            raise ValueError(
+                "The number of weight vectors must match the output size of the layer"
+            )
 
         self.weights_matrix = Matrix(weights)
 
@@ -37,60 +39,64 @@ class Layer:
 
         output = self.weights_matrix * input_vector
 
-        if self.activation_name == 'softmax':
+        if self.activation_name == "softmax":
             return self.calculate_softmax(output)
 
         return Vector([self.activation(x) for x in output.values])
 
     def calculate_gradients(self, output_vector: Vector, error: Vector):
-        print('input_vector:', self.input_vector)
-        print('self.weights_matrix:\n', self.weights_matrix)
+        print("input_vector:", self.input_vector)
+        print("self.weights_matrix:\n", self.weights_matrix)
 
-        d_output_d_activation = Vector([self.activation_derivative(x) for x in output_vector.values])
-        print('d_output_d_activation:', d_output_d_activation)
+        d_output_d_activation = Vector(
+            [self.activation_derivative(x) for x in output_vector.values]
+        )
+        print("d_output_d_activation:", d_output_d_activation)
 
         self.d_output = d_output_d_activation.multiply(error)
-        print('delta:', self.d_output)
+        print("delta:", self.d_output)
 
         self.d_weights = outer_product(self.d_output, self.input_vector)
-        print('d_weights:\n', self.d_weights)
+        print("d_weights:\n", self.d_weights)
 
         transposed_weights = self.weights_matrix.transpose()
-        print('transposed_weights:\n', transposed_weights)
+        print("transposed_weights:\n", transposed_weights)
 
         prev_layer_error = transposed_weights * self.d_output
 
         return prev_layer_error
 
     def update_weights(self, learning_rate):
-        print('weights_matrix before:\n', self.weights_matrix)
+        print("weights_matrix before:\n", self.weights_matrix)
 
-        self.weights_matrix = self.weights_matrix - self.d_weights.scalar_multiply(learning_rate)
+        self.weights_matrix = self.weights_matrix - self.d_weights.scalar_multiply(
+            learning_rate
+        )
 
-        print('weights_matrix after:\n', self.weights_matrix)
+        print("weights_matrix after:\n", self.weights_matrix)
 
     def activation(self, x):
-        if self.activation_name == 'linear':
+        if self.activation_name == "linear":
             return x
-        elif self.activation_name == 'perceptron':
+        elif self.activation_name == "perceptron":
             return 1 if x > 0 else 0
-        elif self.activation_name == 'sigmoid':
+        elif self.activation_name == "sigmoid":
             return 1 / (1 + math.exp(-x))
-        elif self.activation_name == 'relu':
+        elif self.activation_name == "relu":
             return max(0, x)
-        elif self.activation_name == 'tanh':
+        elif self.activation_name == "tanh":
             return math.tanh(x)
 
     def activation_derivative(self, x):
-        if self.activation_name == 'linear':
+        if self.activation_name == "linear":
             return 1
-        elif self.activation_name == 'perceptron':
+        elif self.activation_name == "perceptron":
             return 1
-        elif self.activation_name == 'sigmoid':
+        elif self.activation_name == "sigmoid":
             return x * (1 - x)
-        elif self.activation_name == 'relu':
+        elif self.activation_name == "relu":
             return 1 if x > 0 else 0
-        elif self.activation_name == 'tanh':
+        elif self.activation_name == "tanh":
             return 1 - x
 
     @staticmethod
@@ -99,4 +105,4 @@ class Layer:
         return [math.exp(x) / total_sum for x in v.values]
 
     def __str__(self):
-        return f'Layer: {self.activation_name} - {self.input_size} -> {self.output_size}, weights:\n{self.weights_matrix}'
+        return f"Layer: {self.activation_name} - {self.input_size} -> {self.output_size}, weights:\n{self.weights_matrix}"
