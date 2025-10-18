@@ -1,15 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from neural_network import get_random
+from shared.helpers import get_random
 from neural_network import NeuralNetwork
 
 data = []
 
-nn = NeuralNetwork([
-    {'input_size': 1, 'output_size': 1, 'activation': 'linear'},
-    # {'input_size': 1, 'output_size': 1, 'activation': 'linear'},
-])
+nn = NeuralNetwork(
+    [
+        {"input_size": 1, "output_size": 1, "activation": "linear"},
+        # {'input_size': 1, 'output_size': 1, 'activation': 'linear'},
+    ]
+)
 
 # nn.load_weights([
 #     [[0.5, 0]]
@@ -38,7 +40,7 @@ def draw_nn_line():
         output = nn.forward([x[i]])
         y.append(output.values[0])
 
-    plt.plot(x, y, '-b', label='NN prediction')
+    plt.plot(x, y, "-b", label="NN prediction")
 
 
 def draw_plot():
@@ -62,5 +64,5 @@ def distribute_y(y):
 
 
 # Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+if __name__ == "__main__":
     draw_plot()
