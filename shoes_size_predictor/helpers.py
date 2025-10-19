@@ -35,3 +35,17 @@ def get_vector(input: InputVector) -> Vector:
         return Vector(input)
 
     return input
+
+
+def calculate_mse(output: InputVector, expected_output: InputVector) -> float:
+    sum = 0
+    output = get_vector(output)
+    expected_output = get_vector(expected_output)
+
+    print(len(expected_output))
+
+    subtraction = output - expected_output
+
+    sum += (subtraction * subtraction) / len(expected_output)
+
+    return sum

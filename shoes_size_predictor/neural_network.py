@@ -30,3 +30,6 @@ class NeuralNetwork:
         input = get_vector(input)
 
         return self.forward(input)[-1]
+
+    def calculate_loss(data) -> float:
+        return 0
