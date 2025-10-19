@@ -36,3 +36,6 @@ class Vector:
 
     def __str__(self):
         return str([round(x, 2) for x in self.values])
+
+    def __len__(self) -> int:
+        return len(self.values)
