@@ -1,6 +1,7 @@
 from shared.helpers import get_random
 from shared.matrix import Matrix
 from shared.vector import Vector
+
 from .types import InputVector, Layer, LayerConfig
 
 
