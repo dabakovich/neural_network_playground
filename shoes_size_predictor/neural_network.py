@@ -1,7 +1,10 @@
+from shared.helpers import get_random
 from shared.matrix import Matrix
 from shared.vector import Vector
+
 from .helpers import build_layers, calculate_mse, get_vector
-from .types import DataItem, InputVector, Layer, LayerConfig
+from .layer import Layer
+from .types import DataItem, InputVector, LayerConfig
 
 
 class NeuralNetwork:
@@ -10,13 +13,18 @@ class NeuralNetwork:
     def __init__(
         self,
         layer_configs: list[LayerConfig],
-        layers: list[Layer] = None,
+        weights_list: list[Matrix] = None,
         learning_rate=0.01,
     ):
         self.layer_configs = layer_configs
 
-        if layers is None:
-            layers = build_layers(layer_configs)
+        if weights_list is None:
+            weights_list = build_layers(layer_configs)
+
+        layers = []
+        for index, layer_config in enumerate(layer_configs):
+            layer = Layer(layer_config, weights_list[index], learning_rate)
+            layers.append(layer)
         self.layers = layers
 
         self.learning_rate = learning_rate
@@ -28,7 +36,7 @@ class NeuralNetwork:
         calculated_layers: list[Vector] = []
 
         for layer in self.layers:
-            next_input = layer * Vector(next_input.values + [1])
+            next_input = layer.forward(next_input)
 
             calculated_layers.append(next_input)
 
@@ -62,48 +70,45 @@ class NeuralNetwork:
         input = get_vector(input)
         expected_output = get_vector(expected_output)
 
+        print("initial weights", self.layers)
+
         calculated_layers = self.forward(input)
         output = calculated_layers[-1]
 
         initial_gradient = (output - expected_output) * 2
 
-        print(initial_gradient)
+        print("initial_gradient", initial_gradient)
 
         output_gradient = initial_gradient
 
-        for layer_index in range(len(self.layers) - 1, -1, -1):
+        for index, layer in enumerate(reversed(self.layers)):
             # print(layer)
-            input_with_bias: Matrix
+            next_input: Vector
 
-            if layer_index == 0:
-                input_with_bias = Matrix([input.values + [1]])
+            if index == 0:
+                next_input = input
             else:
-                input_with_bias = Matrix([calculated_layers[layer_index].values + [1]])
+                next_input = calculated_layers[index]
 
-            transposed_output_gradient = Matrix([output_gradient]).transpose()
-
-            print("transposed_output_gradient", transposed_output_gradient)
-            print("input_with_bias", input_with_bias)
-
-            # Calculate weight slopes to updates weights later
-            weight_slopes = transposed_output_gradient * input_with_bias
-            print("weight_slopes", weight_slopes)
-
-            transposed_weights = self.layers[layer_index].transpose()
-
-            # Remove last vector in the transposed_weights matrix
-            transposed_weights = Matrix(transposed_weights.vectors[:-1])
-
-            # Calculate output gradient for "next" layer
-            output_gradient = transposed_weights * output_gradient
-
-            # Update weights
-            self.update_weights(layer_index, weight_slopes)
+            # Calculate new output gradient that will be used in the "next" layer
+            output_gradient = layer.backward(next_input, output_gradient)
 
         print("New weights", self.layers)
         return
 
-    def update_weights(self, layer_index: int, weight_slopes: Matrix):
-        self.layers[layer_index] = self.layers[layer_index] - (
-            weight_slopes * self.learning_rate
-        )
+    def train(self, data: list[DataItem], epochs: int):
+        print("initial loss", self.calculate_loss(data))
+
+        for iteration in range(epochs):
+            print("-" * 20)
+            print("iteration", iteration)
+
+            index = round(get_random(0, len(data) - 1))
+            print("index", index)
+
+            data_item = data[index]
+            print("data_item", data_item)
+
+            self.back_propagate(data_item["input"], data_item["output"])
+
+            print("new loss", self.calculate_loss(data))

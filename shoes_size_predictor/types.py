@@ -1,12 +1,9 @@
 from typing import TypedDict
 
-from shared.matrix import Matrix
 from shared.vector import Vector
-
 
 type NeuronBiasAndWeights = Vector
 
-type Layer = Matrix
 
 type InputVector = Vector | list[float | int]
 

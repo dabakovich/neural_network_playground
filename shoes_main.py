@@ -8,6 +8,4 @@ nn = NeuralNetwork(
 )
 
 
-print(
-    f"Output: {nn.back_propagate(shoes_dataset[0]['input'], shoes_dataset[0]['output'])}"
-)
+nn.train(shoes_dataset, 50)
