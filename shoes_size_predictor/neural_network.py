@@ -1,6 +1,9 @@
+import matplotlib.pyplot as plt
+
 from shared.helpers import get_random
 from shared.matrix import Matrix
 from shared.vector import Vector
+from shoes_size_predictor.visual import cleanup_plot, init_plot, render_plot
 
 from .helpers import build_layers, calculate_mse, get_vector
 from .layer import Layer
@@ -97,7 +100,13 @@ class NeuralNetwork:
         return
 
     def train(self, data: list[DataItem], epochs: int):
+        data_tuples = [(item["input"], item["output"]) for item in data]
+        losses = []
+
         print("initial loss", self.calculate_loss(data))
+
+        # Initialize the plot for real-time updates
+        init_plot()
 
         for iteration in range(epochs):
             print("-" * 20)
@@ -111,4 +120,13 @@ class NeuralNetwork:
 
             self.back_propagate(data_item["input"], data_item["output"])
 
-            print("new loss", self.calculate_loss(data))
+            new_loss = self.calculate_loss(data)
+            losses.append(new_loss)
+            print("new loss", new_loss)
+
+            # Render plot
+            render_plot(data_tuples, losses)
+
+            plt.pause(1)  # Use matplotlib's pause for better integration
+
+        cleanup_plot()

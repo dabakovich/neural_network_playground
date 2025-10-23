@@ -31,7 +31,12 @@ def init_plot():
     print("Plot initialized for real-time updates...")
 
 
-def render_plot(data: list[tuple[int, int]], w: int, b: int, losses: list[int]):
+def render_plot(
+    data: list[tuple[int, int]],
+    # X: list[float],
+    # Y: list[float],
+    losses: list[int],
+):
     """Update the existing plot with new data"""
     global fig, ax, bx
 
@@ -50,14 +55,14 @@ def render_plot(data: list[tuple[int, int]], w: int, b: int, losses: list[int]):
     points = np.array(data)
     ax.scatter(points[:, 0], points[:, 1], s=100, marker="o", label="Points")
 
-    min_x = min(points[:, 0])
-    max_x = max(points[:, 0])
+    # min_x = min(points[:, 0])
+    # max_x = max(points[:, 0])
 
     # Add line
-    X = np.linspace(min_x, max_x)
-    Y = X * w + b
+    # X = np.linspace(min_x, max_x)
+    # Y = X * w + b
 
-    ax.plot(X, Y, label=f"y = x * {w:.3f} + {b:.3f}")
+    # ax.plot(X, Y, label="Neural network")
     ax.legend()
 
     # Render loss graph
