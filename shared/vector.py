@@ -1,3 +1,6 @@
+from types import LambdaType
+
+
 class Vector:
     values: list[int or float]
 
@@ -13,6 +16,9 @@ class Vector:
 
     def clone(self) -> "Vector":
         return Vector([value for value in self.values])
+
+    def process(self, processor: LambdaType) -> "Vector":
+        return Vector([processor(value) for value in self.values])
 
     def __add__(self, other) -> "Vector":
         return Vector(

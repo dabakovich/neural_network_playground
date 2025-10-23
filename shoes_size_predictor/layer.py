@@ -1,6 +1,8 @@
 from shared.matrix import Matrix
 from shared.vector import Vector
-from shoes_size_predictor.types import LayerConfig
+
+from .helpers import activate
+from .types import Activator, LayerConfig
 
 
 class Layer:
@@ -15,7 +17,13 @@ class Layer:
         self.learning_rate = learning_rate
 
     def forward(self, input: Vector) -> Vector:
-        return self.weights * Vector(input.values + [1])
+        signal: Vector = self.weights * Vector(input.values + [1])
+
+        activated_signal = signal.process(
+            lambda value: activate(value, self.get_activator_name())
+        )
+
+        return activated_signal
 
     def backward(self, input: Vector, gradient: Vector) -> Vector:
         """
@@ -52,6 +60,9 @@ class Layer:
 
     def update_weights(self, weight_slopes: Matrix):
         self.weights = self.weights - (weight_slopes * self.learning_rate)
+
+    def get_activator_name(self) -> Activator:
+        return self.layer_config["activation"] or "linear"
 
     def __str__(self):
         return self.weights.__str__()

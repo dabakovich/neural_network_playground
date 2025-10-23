@@ -1,8 +1,10 @@
+import math
+
 from shared.helpers import get_random
 from shared.matrix import Matrix
 from shared.vector import Vector
 
-from .types import InputVector, LayerConfig
+from .types import Activator, InputVector, LayerConfig
 
 
 def build_layers(layer_configs: list[LayerConfig]) -> list[Matrix]:
@@ -53,3 +55,26 @@ def calculate_mse(output: InputVector, expected_output: InputVector) -> float:
     sum += (subtraction * subtraction) / len(expected_output)
 
     return sum
+
+
+def activate(input: Vector, activator: Activator) -> Vector:
+    if activator == "linear":
+        return input
+    elif activator == "relu":
+        return input.process(lambda value: value if value > 0 else -value)
+    elif activator == "sigmoid":
+        return input.process(lambda value: 1 / (1 + math.exp(-value)))
+
+    raise ValueError("Unknown activator function")
+
+
+def derivate(input: Vector, activator: Activator) -> Vector:
+    if activator == "linear":
+        return 1
+    if activator == "relu":
+        return input.process(lambda value: 1 if value > 0 else 0)
+    if activator == "sigmoid":
+        # dy/dx (1 / (1 + e^(-x))) = x * (1 - x)
+        return input.process(lambda value: value * (1 - value))
+
+    raise ValueError("Unknown activator function")
