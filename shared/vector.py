@@ -1,8 +1,8 @@
-from types import LambdaType
+from typing import Callable
 
 
 class Vector:
-    values: list[int or float]
+    values: list[int | float]
 
     def __init__(self, values):
         self.values = values
@@ -17,7 +17,7 @@ class Vector:
     def clone(self) -> "Vector":
         return Vector([value for value in self.values])
 
-    def process(self, processor: LambdaType) -> "Vector":
+    def process(self, processor: Callable[[int | float], int | float]) -> "Vector":
         return Vector([processor(value) for value in self.values])
 
     def __add__(self, other) -> "Vector":

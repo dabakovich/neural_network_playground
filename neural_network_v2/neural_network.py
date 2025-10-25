@@ -124,8 +124,9 @@ class NeuralNetwork:
             losses.append(new_loss)
             print("new loss", new_loss)
 
-            # Render plot
-            render_plot(data_tuples, losses)
+            # Update plot
+
+            render_plot(data_tuples, lambda x: self.forward(x), losses)
 
             plt.pause(1)  # Use matplotlib's pause for better integration
 

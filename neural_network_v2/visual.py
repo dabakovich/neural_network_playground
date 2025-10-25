@@ -1,5 +1,9 @@
+from typing import Callable
 import matplotlib.pyplot as plt
 import numpy as np
+
+from neural_network_v2.types import InputVector
+from shared.vector import Vector
 
 # Global variables to persist figure and axes
 fig = None
@@ -33,8 +37,7 @@ def init_plot():
 
 def render_plot(
     data: list[tuple[int, int]],
-    # X: list[float],
-    # Y: list[float],
+    get_nn_output: Callable[[InputVector], list[Vector]],
     losses: list[int],
 ):
     """Update the existing plot with new data"""
@@ -55,21 +58,24 @@ def render_plot(
     points = np.array(data)
     ax.scatter(points[:, 0], points[:, 1], s=100, marker="o", label="Points")
 
-    # min_x = min(points[:, 0])
-    # max_x = max(points[:, 0])
+    min_x = min(points[:, 0])
+    max_x = max(points[:, 0])
 
     # Add line
-    # X = np.linspace(min_x, max_x)
-    # Y = X * w + b
+    X = np.linspace(min_x, max_x)
+    Y = []
+    for x in X:
+        output = get_nn_output([x])
+        Y.append(output[0].values[0])
 
-    # ax.plot(X, Y, label="Neural network")
+    ax.plot(X, Y, label="Neural network prediction")
     ax.legend()
 
     # Render loss graph
     loss_points = np.array(losses)
     loss_X = range(0, len(losses))
     loss_Y = loss_points
-    bx.plot(loss_X, loss_Y, label=f"Current loss: {losses[-1]}")
+    bx.plot(loss_X, loss_Y, label=f"Current loss: {losses[-1]:.2f}")
     bx.legend()
 
     # Draw the updates
