@@ -1,4 +1,4 @@
-from shoes_size_predictor.types import DataItem
+from .types import DataItem
 
 shoes_dataset: list[DataItem] = [
     {"input": [1.8], "output": [42]},

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from shared.helpers import get_random
 from shared.matrix import Matrix
 from shared.vector import Vector
-from shoes_size_predictor.visual import cleanup_plot, init_plot, render_plot
+from .visual import cleanup_plot, init_plot, render_plot
 
 from .helpers import build_layers, calculate_mse, get_vector
 from .layer import Layer

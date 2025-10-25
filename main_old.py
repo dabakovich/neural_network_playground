@@ -1,5 +1,5 @@
-from shoes_size_predictor.datasets import shoes_dataset
-from shoes_size_predictor.neural_network import NeuralNetwork
+from neural_network_v2.datasets import shoes_dataset
+from neural_network_v2.neural_network import NeuralNetwork
 
 
 nn = NeuralNetwork(
