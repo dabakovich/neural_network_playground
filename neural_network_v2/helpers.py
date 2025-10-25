@@ -45,16 +45,23 @@ def get_vector(input: InputVector) -> Vector:
     return input
 
 
-def calculate_mse(output: InputVector, expected_output: InputVector) -> float:
+def calculate_mse(
+    actual_items: list[InputVector], predicted_items: list[InputVector]
+) -> float:
+    if len(actual_items) != len(predicted_items):
+        raise ValueError("Length of arrays are not equal")
+
     sum = 0
-    output = get_vector(output)
-    expected_output = get_vector(expected_output)
 
-    subtraction = output - expected_output
+    for index, actual_item in enumerate(actual_items):
+        actual_item = get_vector(actual_item)
+        predicted_item = get_vector(predicted_items[index])
 
-    sum += (subtraction * subtraction) / len(expected_output)
+        subtraction = actual_item - predicted_item
 
-    return sum
+        sum += subtraction * subtraction
+
+    return sum / len(actual_items)
 
 
 def activate(input: Vector, activator: Activator) -> Vector:
@@ -78,3 +85,20 @@ def derivate(input: Vector, activator: Activator) -> Vector:
         return input.process(lambda value: value * (1 - value))
 
     raise ValueError("Unknown activator function")
+
+
+def calculate_mean_weight_slopes(
+    batch_weight_slopes: list[list[Matrix]],
+) -> list[Matrix]:
+    sum: list[Matrix] = batch_weight_slopes[0]
+
+    for nn_weight_slopes in batch_weight_slopes[1:]:
+        sum = [
+            sum[index] + layer_weight_slopes
+            for (index, layer_weight_slopes) in enumerate(nn_weight_slopes)
+        ]
+
+    return [
+        nn_weight_slopes.process(lambda value: value / len(batch_weight_slopes))
+        for nn_weight_slopes in sum
+    ]

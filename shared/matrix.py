@@ -1,3 +1,4 @@
+from typing import Callable
 from .vector import Vector
 
 
@@ -26,6 +27,14 @@ class Matrix:
 
     def shape(self):
         return (len(self.vectors), len(self.vectors[0]))
+
+    def process(self, processor: Callable[[int | float], int | float]) -> "Matrix":
+        return Matrix([vector.process(processor) for vector in self.vectors])
+
+    def __add__(self, other: "Matrix") -> "Matrix":
+        return Matrix(
+            [self.vectors[i] + other.vectors[i] for i in range(len(self.vectors))]
+        )
 
     def __mul__(self, value: "Matrix" or Vector or list[float] or int or float):
         """

@@ -25,7 +25,7 @@ class Layer:
 
         return activated_signal
 
-    def backward(self, input: Vector, gradient: Vector) -> Vector:
+    def backward(self, input: Vector, gradient: Vector):
         """
         Process backward gradient signal.
 
@@ -46,18 +46,17 @@ class Layer:
         transposed_weights = Matrix(transposed_weights.vectors[:-1])
 
         # Calculate gradient for "next" layer
-        next_gradient = transposed_weights * transposed_gradient
+        next_gradient_matrix = transposed_weights * transposed_gradient
+        next_gradient_vector: Vector = next_gradient_matrix.transpose().vectors[0]
 
         # CALCULATE WEIGHT SLOPES AND UPDATE WEIGHTS
         input_matrix_with_bias = Matrix([input.values + [1]])
 
-        weight_slopes = transposed_gradient * input_matrix_with_bias
+        weight_slopes: Matrix = transposed_gradient * input_matrix_with_bias
 
         print("weight_slopes", weight_slopes)
 
-        self.update_weights(weight_slopes)
-
-        return next_gradient.transpose().vectors[0]
+        return weight_slopes, next_gradient_vector
 
     def update_weights(self, weight_slopes: Matrix):
         self.weights = self.weights - (weight_slopes * self.learning_rate)
