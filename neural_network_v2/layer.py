@@ -50,13 +50,14 @@ class Layer:
 
         # CALCULATE WEIGHT SLOPES AND UPDATE WEIGHTS
         input_matrix_with_bias = Matrix([input.values + [1]])
+
         weight_slopes = transposed_gradient * input_matrix_with_bias
 
         print("weight_slopes", weight_slopes)
 
         self.update_weights(weight_slopes)
 
-        return next_gradient
+        return next_gradient.transpose().vectors[0]
 
     def update_weights(self, weight_slopes: Matrix):
         self.weights = self.weights - (weight_slopes * self.learning_rate)

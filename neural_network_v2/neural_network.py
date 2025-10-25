@@ -36,7 +36,7 @@ class NeuralNetwork:
         input = get_vector(input)
 
         next_input = input.clone()
-        calculated_layers: list[Vector] = []
+        calculated_layers: list[Vector] = [next_input]
 
         for layer in self.layers:
             next_input = layer.forward(next_input)
@@ -76,6 +76,9 @@ class NeuralNetwork:
         print("initial weights", self.layers)
 
         calculated_layers = self.forward(input)
+
+        print("calculated_layers", calculated_layers)
+
         output = calculated_layers[-1]
 
         initial_gradient = (output - expected_output) * 2
@@ -84,14 +87,16 @@ class NeuralNetwork:
 
         output_gradient = initial_gradient
 
-        for index, layer in enumerate(reversed(self.layers)):
-            # print(layer)
-            next_input: Vector
+        for index in range(len(self.layers) - 1, -1, -1):
+            print(f"back propagate layer index {index}")
+            print("output_gradient", output_gradient)
 
-            if index == 0:
-                next_input = input
-            else:
-                next_input = calculated_layers[index]
+            next_input: Vector
+            layer = self.layers[index]
+
+            next_input = calculated_layers[index]
+
+            print("next_input", next_input)
 
             # Calculate new output gradient that will be used in the "next" layer
             output_gradient = layer.backward(next_input, output_gradient)
@@ -112,10 +117,10 @@ class NeuralNetwork:
             print("-" * 20)
             print("iteration", iteration)
 
-            index = round(get_random(0, len(data) - 1))
-            print("index", index)
+            date_item_index = round(get_random(0, len(data) - 1))
+            print("random data item index", date_item_index)
 
-            data_item = data[index]
+            data_item = data[date_item_index]
             print("data_item", data_item)
 
             self.back_propagate(data_item["input"], data_item["output"])

@@ -66,7 +66,7 @@ def render_plot(
     Y = []
     for x in X:
         output = get_nn_output([x])
-        Y.append(output[0].values[0])
+        Y.append(output[-1].values[0])
 
     ax.plot(X, Y, label="Neural network prediction")
     ax.legend()
