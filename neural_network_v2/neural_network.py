@@ -131,8 +131,9 @@ class NeuralNetwork:
 
             # Update plot
 
+            # Works only with one size input for now
             render_plot(data_tuples, lambda x: self.forward(x), losses)
 
-            plt.pause(1)  # Use matplotlib's pause for better integration
+            plt.pause(0.5)  # Use matplotlib's pause for better integration
 
         cleanup_plot()

@@ -10,3 +10,10 @@ shoes_dataset: list[DataItem] = [
     {"input": [1.9], "output": [44]},
     {"input": [1.75], "output": [41]},
 ]
+
+and_dataset: list[DataItem] = [
+    {"input": [0, 0], "output": [0]},
+    {"input": [0, 1], "output": [0]},
+    {"input": [1, 0], "output": [0]},
+    {"input": [1, 1], "output": [1]},
+]
