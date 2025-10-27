@@ -6,7 +6,7 @@ from unittest.mock import patch
 # Add the parent directory to the path so we can import from neural_network_v2
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from neural_network_v2.helpers import build_layers, calculate_mse
+from neural_network_v2.helpers import build_layers, calculate_loss
 from neural_network_v2.types import LayerConfig
 from shared.matrix import Matrix
 from shared.vector import Vector
@@ -46,31 +46,31 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(len(second_layer.vectors), 1)  # output_size
         self.assertEqual(len(second_layer.vectors[0].values), 3)  # input_size + bias
 
-    def test_calculate_mse_same_vectors(self):
+    def test_calculate_loss_same_vectors(self):
         """Test MSE calculation with identical vectors"""
         output = [1.0, 2.0, 3.0]
         expected = [1.0, 2.0, 3.0]
 
-        result = calculate_mse(output, expected)
+        result = calculate_loss(output, expected, "mse")
 
         self.assertEqual(result, 0.0)
 
-    def test_calculate_mse_different_vectors(self):
+    def test_calculate_loss_different_vectors(self):
         """Test MSE calculation with different vectors"""
         output = [1.0, 2.0, 3.0]
         expected = [2.0, 3.0, 4.0]
 
-        result = calculate_mse(output, expected)
+        result = calculate_loss(output, expected, "mse")
 
         # Expected MSE: ((1-2)² + (2-3)² + (3-4)²) / 3 = (1 + 1 + 1) / 3 = 1.0
         self.assertEqual(result, 1.0)
 
-    def test_calculate_mse_with_vector_objects(self):
+    def test_calculate_loss_with_vector_objects(self):
         """Test MSE calculation with Vector objects"""
         output = Vector([1.0, 2.0])
         expected = Vector([3.0, 4.0])
 
-        result = calculate_mse(output, expected)
+        result = calculate_loss(output, expected, "mse")
 
         # Expected MSE: ((1-3)² + (2-4)²) / 2 = (4 + 4) / 2 = 4.0
         self.assertEqual(result, 4.0)

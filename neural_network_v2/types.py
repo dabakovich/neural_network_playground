@@ -5,6 +5,8 @@ from shared.vector import Vector
 type NeuronBiasAndWeights = Vector
 
 
+type Loss = Literal["mse", "log"]
+
 type Activator = Literal["linear", "relu", "sigmoid"]
 
 

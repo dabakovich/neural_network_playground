@@ -10,6 +10,7 @@ from .types import Activator, LayerConfig
 class Layer:
     layer_config: LayerConfig
     weights: Matrix
+    calculated_layer: Vector | None = None
 
     def __init__(
         self,
@@ -26,6 +27,8 @@ class Layer:
 
         activated_signal = activate(signal, self.get_activator_name())
 
+        self.calculated_layer = activated_signal
+
         return activated_signal
 
     def backward(self, input: Vector, gradient: Vector):
@@ -36,10 +39,9 @@ class Layer:
 
         Also, it calculates weights slopes and updates the layer weights.
         """
-        print("backward -> gradient", gradient)
-        print("backward -> self.get_activator_name()", self.get_activator_name())
-        print("backward -> derivate", derivate(gradient, self.get_activator_name()))
-        gradient = gradient.multiply(derivate(gradient, self.get_activator_name()))
+        dy_dn = derivate(self.calculated_layer, self.get_activator_name())
+
+        gradient = gradient.multiply(dy_dn)
 
         print("gradient", gradient)
 
@@ -61,9 +63,6 @@ class Layer:
 
         # CALCULATE WEIGHT SLOPES AND UPDATE WEIGHTS
         input_matrix_with_bias = Matrix([input.values + [1]])
-
-        print(f"transposed_gradient {transposed_gradient}")
-        print(f"input_matrix_with_bias {input_matrix_with_bias}")
 
         weight_slopes: Matrix = transposed_gradient * input_matrix_with_bias
 

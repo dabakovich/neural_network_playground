@@ -14,6 +14,13 @@ class Vector:
             [self.values[i] * other.values[i] for i in range(len(self.values))]
         )
 
+    def divide(self, other: "Vector") -> "Vector":
+        if len(self.values) != len(other.values):
+            raise ValueError("Vectors must have the same length")
+        return Vector(
+            [self.values[i] / other.values[i] for i in range(len(self.values))]
+        )
+
     def clone(self) -> "Vector":
         return Vector([value for value in self.values])
 
@@ -21,14 +28,20 @@ class Vector:
         return Vector([processor(value) for value in self.values])
 
     def __add__(self, other) -> "Vector":
-        return Vector(
-            [self.values[i] + other.values[i] for i in range(len(self.values))]
-        )
+        if isinstance(other, Vector):
+            return Vector(
+                [self.values[i] + other.values[i] for i in range(len(self.values))]
+            )
+        if isinstance(other, (int, float)):
+            return Vector([self.values[i] + other for i in range(len(self.values))])
 
     def __sub__(self, other) -> "Vector":
         return Vector(
             [self.values[i] - other.values[i] for i in range(len(self.values))]
         )
+
+    def __neg__(self) -> "Vector":
+        return Vector([-self.values[i] for i in range(len(self.values))])
 
     def __mul__(self, other):
         if isinstance(other, Vector):

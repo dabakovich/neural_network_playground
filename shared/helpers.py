@@ -33,6 +33,6 @@ def get_matrix(input: Matrix | list[InputVector]) -> Matrix:
         return input
 
     if isinstance(input, list):
-        return [Vector(vector) for vector in input]
+        return Matrix([Vector(vector) for vector in input])
 
     raise ValueError("Unknown matrix value provided")

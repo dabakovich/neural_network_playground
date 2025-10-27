@@ -5,7 +5,7 @@ from shared.matrix import Matrix
 from shared.types import InputVector
 from shared.vector import Vector
 
-from .types import Activator, LayerConfig
+from .types import Activator, LayerConfig, Loss
 
 
 def build_layers(layer_configs: list[LayerConfig]) -> list[Matrix]:
@@ -39,23 +39,47 @@ def build_layer(layer_config: LayerConfig) -> Matrix:
     return weights
 
 
-def calculate_mse(
-    actual_items: list[InputVector], predicted_items: list[InputVector]
+def calculate_loss(
+    actual_items: list[InputVector],
+    predicted_items: list[InputVector],
+    loss_name: Loss = "mse",
 ) -> float:
     if len(actual_items) != len(predicted_items):
         raise ValueError("Length of arrays are not equal")
 
     sum = 0
 
-    for index, actual_item in enumerate(actual_items):
-        actual_item = get_vector(actual_item)
-        predicted_item = get_vector(predicted_items[index])
+    for index, actual_y in enumerate[InputVector](actual_items):
+        actual_y = get_vector(actual_y)
+        predicted_y = get_vector(predicted_items[index])
 
-        subtraction = actual_item - predicted_item
+        if loss_name == "mse":
+            subtraction = actual_y - predicted_y
 
-        sum += subtraction * subtraction
+            sum += subtraction * subtraction
+        elif loss_name == "log":
+            sum += -actual_y * predicted_y.process(lambda value: math.log(value)) - (
+                -actual_y + 1
+            ) * predicted_y.process(lambda value: math.log(1 - value))
+        else:
+            raise ValueError("Unknown loss function name")
 
     return sum / len(actual_items)
+
+
+def calculate_loss_derivative(
+    predicted_output: Vector,
+    actual_output: Vector,
+    loss_name: Loss = "mse",
+) -> Vector:
+    if loss_name == "mse":
+        return (predicted_output - actual_output) * 2
+    elif loss_name == "log":
+        return -actual_output.divide(predicted_output) + (-actual_output + 1) / (
+            -predicted_output + 1
+        )
+
+    raise ValueError("Unknown loss function name")
 
 
 def activate(input: Vector, activator: Activator) -> Vector:

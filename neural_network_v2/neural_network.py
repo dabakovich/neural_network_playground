@@ -7,11 +7,12 @@ from shared.vector import Vector
 
 from .helpers import (
     build_layers,
+    calculate_loss,
+    calculate_loss_derivative,
     calculate_mean_weight_slopes,
-    calculate_mse,
 )
 from .layer import Layer
-from .types import DataItem, LayerConfig
+from .types import DataItem, LayerConfig, Loss
 from .visual import cleanup_plot, init_plot, render_plot
 
 
@@ -23,6 +24,7 @@ class NeuralNetwork:
         layer_configs: list[LayerConfig],
         weights_list: list[InputMatrix] = None,
         learning_rate=0.01,
+        loss_name: Loss = "mse",
     ):
         self.layer_configs = layer_configs
 
@@ -36,6 +38,7 @@ class NeuralNetwork:
         self.layers = layers
 
         self.learning_rate = learning_rate
+        self.loss_name = loss_name
 
     def forward(self, input: InputVector) -> list[Vector]:
         input = get_vector(input)
@@ -62,11 +65,11 @@ class NeuralNetwork:
         for item in batch:
             predicted_items.append(self.calculate_output(item["input"]))
 
-        loss = calculate_mse(actual_items, predicted_items)
+        loss = calculate_loss(actual_items, predicted_items, self.loss_name)
 
         return loss
 
-    def back_propagate(self, input: InputVector, expected_output: InputVector):
+    def back_propagate(self, input: InputVector, actual_output: InputVector):
         """
         Back propagate neural network and update weights
 
@@ -79,7 +82,7 @@ class NeuralNetwork:
         -- Update weights using the weight slopes matrix
         """
         input = get_vector(input)
-        expected_output = get_vector(expected_output)
+        actual_output = get_vector(actual_output)
 
         print("initial weights", self.layers)
 
@@ -87,13 +90,13 @@ class NeuralNetwork:
 
         print("calculated_layers", calculated_layers)
 
-        output = calculated_layers[-1]
+        predicted_output = calculated_layers[-1]
 
-        initial_gradient = (output - expected_output) * 2
+        d_loss_d_y = calculate_loss_derivative(predicted_output, actual_output)
 
-        print("initial_gradient", initial_gradient)
+        print("d_loss_d_y", d_loss_d_y)
 
-        output_gradient = initial_gradient
+        output_gradient = d_loss_d_y
 
         for index in range(len(self.layers) - 1, -1, -1):
             print(f"back propagate layer index {index}")
@@ -194,7 +197,7 @@ class NeuralNetwork:
             # Works only with one size input for now
             render_plot(data_tuples, lambda x: self.forward(x), losses)
 
-            plt.pause(0.5)  # Use matplotlib's pause for better integration
+            plt.pause(0.1)  # Use matplotlib's pause for better integration
 
         cleanup_plot()
 
