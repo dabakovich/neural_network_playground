@@ -1,10 +1,11 @@
 import math
 
-from shared.helpers import get_random
+from shared.helpers import get_random, get_vector
 from shared.matrix import Matrix
+from shared.types import InputVector
 from shared.vector import Vector
 
-from .types import Activator, InputVector, LayerConfig
+from .types import Activator, LayerConfig
 
 
 def build_layers(layer_configs: list[LayerConfig]) -> list[Matrix]:
@@ -36,13 +37,6 @@ def build_layer(layer_config: LayerConfig) -> Matrix:
         weights.vectors.append(weights_and_bias)
 
     return weights
-
-
-def get_vector(input: InputVector) -> Vector:
-    if isinstance(input, list):
-        return Vector(input)
-
-    return input
 
 
 def calculate_mse(

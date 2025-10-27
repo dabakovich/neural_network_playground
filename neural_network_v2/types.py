@@ -5,9 +5,6 @@ from shared.vector import Vector
 type NeuronBiasAndWeights = Vector
 
 
-type InputVector = Vector | list[float | int]
-
-
 type Activator = Literal["linear", "relu", "sigmoid"]
 
 

@@ -1,8 +1,9 @@
 from typing import Callable
+
 import matplotlib.pyplot as plt
 import numpy as np
 
-from neural_network_v2.types import InputVector
+from shared.types import InputVector
 from shared.vector import Vector
 
 # Global variables to persist figure and axes
@@ -39,6 +40,7 @@ def render_plot(
     data: list[tuple[int, int]],
     get_nn_output: Callable[[InputVector], list[Vector]],
     losses: list[int],
+    iteration: int | None,
 ):
     """Update the existing plot with new data"""
     global fig, ax, bx
@@ -75,9 +77,10 @@ def render_plot(
     loss_points = np.array(losses)
     loss_X = range(0, len(losses))
     loss_Y = loss_points
-    bx.plot(loss_X, loss_Y, label=f"Current loss: {losses[-1]:.2f}")
+    bx.plot(loss_X, loss_Y, label=f"Current loss: {losses[-1]:.4f}")
     bx.legend()
 
+    fig.set_label(f"Iteration {iteration}")
     # Draw the updates
     fig.canvas.draw()
     fig.canvas.flush_events()

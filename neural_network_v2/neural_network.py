@@ -1,17 +1,17 @@
 import matplotlib.pyplot as plt
 
-from shared.helpers import get_random
+from shared.helpers import get_random, get_vector
 from shared.matrix import Matrix
+from shared.types import InputMatrix, InputVector
 from shared.vector import Vector
 
 from .helpers import (
     build_layers,
     calculate_mean_weight_slopes,
     calculate_mse,
-    get_vector,
 )
 from .layer import Layer
-from .types import DataItem, InputVector, LayerConfig
+from .types import DataItem, LayerConfig
 from .visual import cleanup_plot, init_plot, render_plot
 
 
@@ -21,7 +21,7 @@ class NeuralNetwork:
     def __init__(
         self,
         layer_configs: list[LayerConfig],
-        weights_list: list[Matrix] = None,
+        weights_list: list[InputMatrix] = None,
         learning_rate=0.01,
     ):
         self.layer_configs = layer_configs
@@ -119,9 +119,13 @@ class NeuralNetwork:
         all_batch_weight_slopes: list[list[Matrix]] = []
 
         for item_index, item in enumerate(batch):
+            print(f"item_index {item_index}")
             actual_output = get_vector(item["output"])
             calculated_layers = predictions[item_index]
             predicted_output = calculated_layers[-1]
+
+            print(f"predicted_output {predicted_output}")
+            print(f"actual_output {actual_output}")
 
             initial_gradient = (predicted_output - actual_output) * 2
             output_gradient = initial_gradient
@@ -129,8 +133,11 @@ class NeuralNetwork:
             nn_weight_slopes: list[Matrix] = []
 
             for layer_index in range(len(self.layers) - 1, -1, -1):
+                print(f"layer_index {layer_index}")
                 layer = self.layers[layer_index]
                 next_input = calculated_layers[layer_index]
+
+                print(f"output_gradient {output_gradient}")
 
                 # Calculate new output gradient that will be used in the "next" layer
                 layer_weight_slopes, output_gradient = layer.backward(
@@ -150,6 +157,8 @@ class NeuralNetwork:
         # Update whole NN weights using batch mean slopes
         for index, weight_slopes in enumerate(mean_batch_weight_slopes):
             self.layers[index].update_weights(weight_slopes)
+
+        print("new weights", self.layers)
 
     def train_sgd(self, data: list[DataItem], epochs: int):
         """
@@ -215,8 +224,8 @@ class NeuralNetwork:
             # Update plot
 
             # Works only with one size input for now
-            render_plot(data_tuples, lambda x: self.forward(x), losses)
+            render_plot(data_tuples, lambda x: self.forward(x), losses, iteration)
 
-            plt.pause(0.5)  # Use matplotlib's pause for better integration
+            plt.pause(0.1)  # Use matplotlib's pause for better integration
 
         cleanup_plot()

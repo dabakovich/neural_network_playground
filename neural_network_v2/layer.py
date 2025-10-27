@@ -1,7 +1,9 @@
+from shared.helpers import get_matrix
 from shared.matrix import Matrix
+from shared.types import InputMatrix
 from shared.vector import Vector
 
-from .helpers import activate
+from .helpers import activate, derivate
 from .types import Activator, LayerConfig
 
 
@@ -10,18 +12,19 @@ class Layer:
     weights: Matrix
 
     def __init__(
-        self, layer_config: LayerConfig, weights: Matrix, learning_rate: float
+        self,
+        layer_config: LayerConfig,
+        weights: InputMatrix,
+        learning_rate: float,
     ):
         self.layer_config = layer_config
-        self.weights = weights
+        self.weights = get_matrix(weights)
         self.learning_rate = learning_rate
 
     def forward(self, input: Vector) -> Vector:
         signal: Vector = self.weights * Vector(input.values + [1])
 
-        activated_signal = signal.process(
-            lambda value: activate(value, self.get_activator_name())
-        )
+        activated_signal = activate(signal, self.get_activator_name())
 
         return activated_signal
 
@@ -33,10 +36,17 @@ class Layer:
 
         Also, it calculates weights slopes and updates the layer weights.
         """
+        print("backward -> gradient", gradient)
+        print("backward -> self.get_activator_name()", self.get_activator_name())
+        print("backward -> derivate", derivate(gradient, self.get_activator_name()))
+        gradient = gradient.multiply(derivate(gradient, self.get_activator_name()))
+
+        print("gradient", gradient)
+
         # We need to transpose gradient to make it "vertical" matrix
         # We could use it for:
         # - Multiplying by input matrix to get weight slopes
-        # - multiplying by transpose weights matrix to get next gradient
+        # - Multiplying by transpose weights matrix to get next gradient
         transposed_gradient = Matrix([gradient]).transpose()
 
         # We need transpose weights when moving backward, biases will be the last vector in the matrix
@@ -51,6 +61,9 @@ class Layer:
 
         # CALCULATE WEIGHT SLOPES AND UPDATE WEIGHTS
         input_matrix_with_bias = Matrix([input.values + [1]])
+
+        print(f"transposed_gradient {transposed_gradient}")
+        print(f"input_matrix_with_bias {input_matrix_with_bias}")
 
         weight_slopes: Matrix = transposed_gradient * input_matrix_with_bias
 

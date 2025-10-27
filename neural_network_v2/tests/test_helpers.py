@@ -1,35 +1,18 @@
+import os
+import sys
 import unittest
 from unittest.mock import patch
-import sys
-import os
 
 # Add the parent directory to the path so we can import from neural_network_v2
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from shared.vector import Vector
-from shared.matrix import Matrix
-from neural_network_v2.helpers import build_layers, get_vector, calculate_mse
+from neural_network_v2.helpers import build_layers, calculate_mse
 from neural_network_v2.types import LayerConfig
+from shared.matrix import Matrix
+from shared.vector import Vector
 
 
 class TestHelpers(unittest.TestCase):
-    def test_get_vector_with_list(self):
-        """Test get_vector with a list input"""
-        input_list = [1.0, 2.0, 3.0]
-        result = get_vector(input_list)
-
-        self.assertIsInstance(result, Vector)
-        self.assertEqual(result.values, input_list)
-
-    def test_get_vector_with_vector(self):
-        """Test get_vector with a Vector input"""
-        input_vector = Vector([1.0, 2.0, 3.0])
-        result = get_vector(input_vector)
-
-        self.assertIsInstance(result, Vector)
-        self.assertEqual(result.values, input_vector.values)
-        self.assertIs(result, input_vector)  # Should return the same object
-
     @patch("neural_network_v2.helpers.get_random")
     def test_build_layers(self, mock_get_random):
         """Test build_layers function"""
