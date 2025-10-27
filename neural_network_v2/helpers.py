@@ -95,7 +95,7 @@ def activate(input: Vector, activator: Activator) -> Vector:
 
 def derivate(input: Vector, activator: Activator) -> Vector:
     if activator == "linear":
-        return 1
+        return input
     if activator == "relu":
         return input.process(lambda value: 1 if value > 0 else 0)
     if activator == "sigmoid":
