@@ -7,7 +7,7 @@ type NeuronBiasAndWeights = Vector
 
 type Loss = Literal["mse", "log"]
 
-type Activator = Literal["linear", "relu", "sigmoid"]
+type Activator = Literal["linear", "relu", "sigmoid", "tanh"]
 
 
 class LayerConfig(TypedDict):

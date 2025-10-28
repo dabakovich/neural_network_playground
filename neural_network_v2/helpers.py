@@ -75,8 +75,8 @@ def calculate_loss_derivative(
     if loss_name == "mse":
         return (predicted_output - actual_output) * 2
     elif loss_name == "log":
-        return -actual_output.divide(predicted_output) + (-actual_output + 1) / (
-            -predicted_output + 1
+        return -actual_output.divide(predicted_output) + (1 - actual_output) / (
+            1 - predicted_output
         )
 
     raise ValueError("Unknown loss function name")
@@ -89,6 +89,8 @@ def activate(input: Vector, activator: Activator) -> Vector:
         return input.process(lambda value: value if value > 0 else -value)
     elif activator == "sigmoid":
         return input.process(lambda value: 1 / (1 + math.exp(-value)))
+    if activator == "tanh":
+        return input.process(lambda value: math.tanh(value))
 
     raise ValueError("Unknown activator function")
 
@@ -101,6 +103,9 @@ def derivate(input: Vector, activator: Activator) -> Vector:
     if activator == "sigmoid":
         # dy/dx (1 / (1 + e^(-x))) = x * (1 - x)
         return input.process(lambda value: value * (1 - value))
+    if activator == "tanh":
+        # dy/dx tanh(x) = 1 - tanh^2(x)
+        return input.process(lambda value: 1 - value**2)
 
     raise ValueError("Unknown activator function")
 
