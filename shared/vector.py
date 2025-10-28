@@ -70,6 +70,18 @@ class Vector:
 
         return Vector([self.values[i] * other for i in range(len(self.values))])
 
+    def __pow__(self, other) -> "Vector":
+        """Power operation: vector ** number or vector ** vector (element-wise)"""
+        if isinstance(other, Vector):
+            if len(self.values) != len(other.values):
+                raise ValueError("Vectors must have the same length")
+            return Vector(
+                [self.values[i] ** other.values[i] for i in range(len(self.values))]
+            )
+        if isinstance(other, (int, float)):
+            return Vector([self.values[i] ** other for i in range(len(self.values))])
+        return NotImplemented
+
     def __str__(self):
         return str([round(x, 2) for x in self.values])
 

@@ -105,7 +105,7 @@ def derivate(input: Vector, activator: Activator) -> Vector:
         return input.process(lambda value: value * (1 - value))
     if activator == "tanh":
         # dy/dx tanh(x) = 1 - tanh^2(x)
-        return input.process(lambda value: 1 - value**2)
+        return 1 - input**2
 
     raise ValueError("Unknown activator function")
 
