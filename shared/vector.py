@@ -34,11 +34,28 @@ class Vector:
             )
         if isinstance(other, (int, float)):
             return Vector([self.values[i] + other for i in range(len(self.values))])
+        return NotImplemented
+
+    def __radd__(self, other) -> "Vector":
+        """Reverse addition for number + vector"""
+        if isinstance(other, (int, float)):
+            return Vector([other + self.values[i] for i in range(len(self.values))])
+        return NotImplemented
 
     def __sub__(self, other) -> "Vector":
-        return Vector(
-            [self.values[i] - other.values[i] for i in range(len(self.values))]
-        )
+        if isinstance(other, Vector):
+            return Vector(
+                [self.values[i] - other.values[i] for i in range(len(self.values))]
+            )
+        if isinstance(other, (int, float)):
+            return Vector([self.values[i] - other for i in range(len(self.values))])
+        return NotImplemented
+
+    def __rsub__(self, other) -> "Vector":
+        """Reverse subtraction for number - vector"""
+        if isinstance(other, (int, float)):
+            return Vector([other - self.values[i] for i in range(len(self.values))])
+        return NotImplemented
 
     def __neg__(self) -> "Vector":
         return Vector([-self.values[i] for i in range(len(self.values))])
