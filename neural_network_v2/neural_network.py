@@ -13,7 +13,7 @@ from .helpers import (
 )
 from .layer import Layer
 from .types import DataItem, LayerConfig, Loss
-from .visual import cleanup_plot, init_plot, render_plot
+from .visual import cleanup_plot, init_plot, render_losses, render_plot
 
 
 class NeuralNetwork:
@@ -196,6 +196,7 @@ class NeuralNetwork:
 
             # Works only with one size input for now
             # render_plot(data_tuples, lambda x: self.forward(x), losses)
+            render_losses(losses)
 
             plt.pause(0.1)  # Use matplotlib's pause for better integration
 
@@ -227,8 +228,10 @@ class NeuralNetwork:
             # Update plot
 
             # Works only with one size input for now
-            # render_plot(data_tuples, lambda x: self.forward(x), losses, iteration)
+            render_losses(losses)
 
-            plt.pause(0.1)  # Use matplotlib's pause for better integration
+            # plt.pause(0.1)  # Use matplotlib's pause for better integration
 
+        print(f"Initial loss: {losses[0]}")
+        print(f"Final loss: {losses[-1]}")
         cleanup_plot()

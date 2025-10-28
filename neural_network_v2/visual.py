@@ -40,10 +40,9 @@ def render_plot(
     data: list[tuple[int, int]],
     get_nn_output: Callable[[InputVector], list[Vector]],
     losses: list[int],
-    iteration: int | None,
 ):
     """Update the existing plot with new data"""
-    global fig, ax, bx
+    global fig, ax
 
     if fig is None or ax is None:
         print("Warning: Plot not initialized. Call init_plot() first.")
@@ -53,7 +52,6 @@ def render_plot(
 
     # Clear the axes but keep the labels
     ax.clear()
-    bx.clear()
     set_labels()
 
     # Add points
@@ -73,6 +71,25 @@ def render_plot(
     ax.plot(X, Y, label="Neural network prediction")
     ax.legend()
 
+    render_losses(losses)
+
+    # Draw the updates
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+
+def render_losses(losses: list[int]):
+    """Update the existing plot with new data"""
+    global fig, bx
+
+    if fig is None:
+        print("Warning: Plot not initialized. Call init_plot() first.")
+        return
+
+    print("Rendering losses...")
+
+    bx.clear()
+
     # Render loss graph
     loss_points = np.array(losses)
     loss_X = range(0, len(losses))
@@ -80,7 +97,6 @@ def render_plot(
     bx.plot(loss_X, loss_Y, label=f"Current loss: {losses[-1]:.4f}")
     bx.legend()
 
-    fig.set_label(f"Iteration {iteration}")
     # Draw the updates
     fig.canvas.draw()
     fig.canvas.flush_events()
@@ -92,7 +108,7 @@ def cleanup_plot():
 
     plt.ioff()  # Turn off interactive mode
     if fig is not None:
-        plt.pause(10)
+        # plt.pause(10)
         plt.close(fig)
 
     fig = None
