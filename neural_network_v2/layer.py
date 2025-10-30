@@ -43,7 +43,7 @@ class Layer:
 
         gradient = gradient.multiply(dy_dn)
 
-        print("gradient", gradient)
+        # print("gradient", gradient)
 
         # We need to transpose gradient to make it "vertical" matrix
         # We could use it for:
@@ -66,7 +66,7 @@ class Layer:
 
         weight_slopes: Matrix = transposed_gradient * input_matrix_with_bias
 
-        print("weight_slopes", weight_slopes)
+        # print("weight_slopes", weight_slopes)
 
         return weight_slopes, next_gradient_vector
 

@@ -1,3 +1,7 @@
+import math
+from neural_network_v2.types import LayerConfig
+
+
 import matplotlib.pyplot as plt
 
 from shared.helpers import get_random, get_vector
@@ -13,7 +17,13 @@ from .helpers import (
 )
 from .layer import Layer
 from .types import DataItem, LayerConfig, Loss
-from .visual import cleanup_plot, init_plot, render_losses, render_plot
+from .visual import (
+    cleanup_plot,
+    init_plot,
+    render_losses,
+    render_nn_output,
+    render_plot,
+)
 
 
 class NeuralNetwork:
@@ -32,7 +42,7 @@ class NeuralNetwork:
             weights_list = build_layers(layer_configs)
 
         layers = []
-        for index, layer_config in enumerate(layer_configs):
+        for index, layer_config in enumerate[LayerConfig](layer_configs):
             layer = Layer(layer_config, weights_list[index], learning_rate)
             layers.append(layer)
         self.layers = layers
@@ -60,10 +70,7 @@ class NeuralNetwork:
 
     def calculate_loss(self, batch: list[DataItem]) -> float:
         actual_items = [item["output"] for item in batch]
-        predicted_items = []
-
-        for item in batch:
-            predicted_items.append(self.calculate_output(item["input"]))
+        predicted_items = [self.calculate_output(item["input"]) for item in batch]
 
         loss = calculate_loss(actual_items, predicted_items, self.loss_name)
 
@@ -84,35 +91,37 @@ class NeuralNetwork:
         input = get_vector(input)
         actual_output = get_vector(actual_output)
 
-        print("initial weights", self.layers)
+        # print("initial weights", self.layers)
 
         calculated_layers = self.forward(input)
 
-        print("calculated_layers", calculated_layers)
+        # print("calculated_layers", calculated_layers)
 
         predicted_output = calculated_layers[-1]
 
         d_loss_d_y = calculate_loss_derivative(predicted_output, actual_output)
 
-        print("d_loss_d_y", d_loss_d_y)
+        # print("d_loss_d_y", d_loss_d_y)
 
         output_gradient = d_loss_d_y
 
-        for index in range(len(self.layers) - 1, -1, -1):
-            print(f"back propagate layer index {index}")
-            print("output_gradient", output_gradient)
+        nn_weight_slopes: list[Matrix] = []
 
+        for index in range(len(self.layers) - 1, -1, -1):
             layer = self.layers[index]
             next_input = calculated_layers[index]
 
-            print("next_input", next_input)
+            # print("next_input", next_input)
 
             # Calculate new output gradient that will be used in the "next" layer
             weight_slopes, output_gradient = layer.backward(next_input, output_gradient)
 
+            nn_weight_slopes.insert(0, weight_slopes)
+
             layer.update_weights(weight_slopes)
 
-        print("New weights", self.layers)
+        # print("nn_weight_slopes", nn_weight_slopes)
+        # print("New weights", self.layers)
         return
 
     def back_propagate_batch(self, batch: list[DataItem]):
@@ -136,11 +145,11 @@ class NeuralNetwork:
             nn_weight_slopes: list[Matrix] = []
 
             for layer_index in range(len(self.layers) - 1, -1, -1):
-                print(f"layer_index {layer_index}")
+                # print(f"layer_index {layer_index}")
                 layer = self.layers[layer_index]
                 next_input = calculated_layers[layer_index]
 
-                print(f"output_gradient {output_gradient}")
+                # print(f"output_gradient {output_gradient}")
 
                 # Calculate new output gradient that will be used in the "next" layer
                 layer_weight_slopes, output_gradient = layer.backward(
@@ -163,7 +172,7 @@ class NeuralNetwork:
 
         print("new weights", self.layers)
 
-    def train_sgd(self, data: list[DataItem], epochs: int):
+    def train_sgd(self, data: list[DataItem], epochs: int, render_every=1000):
         """
         Train SGD (stochastic gradient descent)
         It takes random item from the all dataset list and makes back propagate for one example
@@ -177,37 +186,36 @@ class NeuralNetwork:
         init_plot()
 
         for iteration in range(epochs):
-            print("-" * 20)
-            print("iteration", iteration)
-
-            date_item_index = round(get_random(0, len(data) - 1))
-            print("random data item index", date_item_index)
+            date_item_index = math.floor(get_random(0, len(data)))
+            # print("random data item index", date_item_index)
 
             data_item = data[date_item_index]
-            print("data_item", data_item)
+            # print("data_item", data_item)
 
             self.back_propagate(data_item["input"], data_item["output"])
 
             new_loss = self.calculate_loss(data)
             losses.append(new_loss)
-            print("new loss", new_loss)
 
-            # Update plot
+            if iteration % render_every == 0 or iteration == 1:
+                print("-" * 20)
+                print("iteration", iteration)
 
-            # Works only with one size input for now
-            # render_plot(data_tuples, lambda x: self.forward(x), losses)
-            render_losses(losses)
+                print("new loss", new_loss)
+                print("new weights", self.layers)
 
-            plt.pause(0.1)  # Use matplotlib's pause for better integration
+                # Update plot
+                render_nn_output(data, lambda x: self.calculate_output(x))
+
+                render_losses(losses)
 
         cleanup_plot()
 
-    def train_batch(self, data: list[DataItem], epochs: int):
+    def train_batch(self, data: list[DataItem], epochs: int, render_every=1000):
         """
         Train NN over batch examples.
         It calculates mean weight slopes and updates weights once per epoch
         """
-        data_tuples = [(item["input"], item["output"]) for item in data]
         losses = []
 
         print("initial loss", self.calculate_loss(data))
@@ -216,22 +224,21 @@ class NeuralNetwork:
         init_plot()
 
         for iteration in range(epochs):
-            print("-" * 20)
-            print("iteration", iteration)
-
             self.back_propagate_batch(data)
 
             new_loss = self.calculate_loss(data)
             losses.append(new_loss)
-            print("new loss", new_loss)
 
-            # Update plot
+            if iteration % render_every == 0 or iteration == 1:
+                print("-" * 20)
+                print("iteration", iteration)
 
-            # Works only with one size input for now
-            render_losses(losses)
+                print("new loss", new_loss)
+                print("new weights", self.layers)
 
-            # plt.pause(0.1)  # Use matplotlib's pause for better integration
+                # Update plot
+                render_nn_output(data, lambda x: self.calculate_output(x))
 
-        print(f"Initial loss: {losses[0]}")
-        print(f"Final loss: {losses[-1]}")
+                render_losses(losses)
+
         cleanup_plot()

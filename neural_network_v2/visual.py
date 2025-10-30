@@ -3,6 +3,7 @@ from typing import Callable
 import matplotlib.pyplot as plt
 import numpy as np
 
+from neural_network_v2.types import DataItem
 from shared.types import InputVector
 from shared.vector import Vector
 
@@ -14,11 +15,12 @@ bx = None
 
 def set_labels():
     # Set labels (these don't change)
-    ax.set_xlabel("Height")
-    ax.set_ylabel("Size")
+    ax.set_xlabel("X_1")
+    ax.set_ylabel("X_2")
+    ax.set_zlabel("Y")
 
-    bx.set_xlabel("Height")
-    bx.set_ylabel("Size")
+    bx.set_xlabel("Iterations")
+    bx.set_ylabel("Loss")
 
 
 def init_plot():
@@ -30,7 +32,8 @@ def init_plot():
 
     # Create figure and axes once
     fig = plt.figure(figsize=(10, 8))
-    ax = fig.add_subplot(1, 2, 1)
+    # ax = fig.add_subplot(1, 2, 1)
+    ax = fig.add_subplot(1, 2, 1, projection="3d")
     bx = fig.add_subplot(1, 2, 2)
 
     print("Plot initialized for real-time updates...")
@@ -78,6 +81,47 @@ def render_plot(
     fig.canvas.flush_events()
 
 
+# Renders 3D plot of neural network output where x and y are inputs and z is output
+def render_nn_output(
+    data: list[DataItem],
+    get_nn_output: Callable[[InputVector], Vector],
+):
+    global fig, ax
+
+    if fig is None or ax is None:
+        print("Warning: Plot not initialized. Call init_plot() first.")
+        return
+
+    ax.clear()
+    set_labels()
+
+    # Extract dataset points
+    if data and len(data) > 0:
+        data_x = [item["input"][0] for item in data]
+        data_y = [item["input"][1] for item in data]
+        data_z = [item["output"][0] for item in data]
+
+    # Plot dataset points
+    ax.scatter(
+        data_x, data_y, data_z, color="red", marker="o", s=100, label="Dataset points"
+    )
+
+    X = np.linspace(-0.5, +1.5, 100)
+    Y = np.linspace(-0.5, +1.5, 100)
+
+    X, Y = np.meshgrid(X, Y)
+
+    Z = [get_nn_output([x, y]).values[0] for x, y in zip(X.flatten(), Y.flatten())]
+
+    Z = np.array(Z).reshape(X.shape)
+
+    ax.plot_surface(X, Y, Z)
+
+    # Draw the updates
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+
 def render_losses(losses: list[int]):
     """Update the existing plot with new data"""
     global fig, bx
@@ -86,9 +130,8 @@ def render_losses(losses: list[int]):
         print("Warning: Plot not initialized. Call init_plot() first.")
         return
 
-    print("Rendering losses...")
-
     bx.clear()
+    set_labels()
 
     # Render loss graph
     loss_points = np.array(losses)
@@ -108,7 +151,7 @@ def cleanup_plot():
 
     plt.ioff()  # Turn off interactive mode
     if fig is not None:
-        # plt.pause(10)
+        plt.pause(60)
         plt.close(fig)
 
     fig = None

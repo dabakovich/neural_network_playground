@@ -29,3 +29,10 @@ xor_dataset: list[DataItem] = [
     {"input": [1, 0], "output": [1]},
     {"input": [1, 1], "output": [0]},
 ]
+
+# Test in the future
+test_2d_parabola_dataset: list[DataItem] = [
+    {"input": [-1], "output": [1]},
+    {"input": [0], "output": [0]},
+    {"input": [1], "output": [1]},
+]
