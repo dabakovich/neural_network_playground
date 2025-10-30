@@ -67,10 +67,18 @@ nn_one_layer_two_inputs = NeuralNetwork(
 
 # print(nn_two_layers_two_inputs_sigmoid.layers)
 # nn_one_layer_sigmoid.train_batch(not_dataset, 500)
-# nn_one_layer_two_inputs_sigmoid.train_batch(and_dataset, 500)
+
+# Working example for AND
+nn_one_layer_two_inputs_sigmoid.train_batch(and_dataset, 10000, 10)
 # nn_two_layers_two_inputs_sigmoid.train_batch(and_dataset, 500)
+
+
+# Working example for XOR
+# nn_two_layers_two_inputs_sigmoid.train_sgd(xor_dataset, 4 * 10000, 10)
+
+# Not stable example for XOR
 # nn_two_layers_two_inputs_sigmoid.train_batch(xor_dataset, 4 * 10000, 500)
-nn_two_layers_two_inputs_sigmoid.train_sgd(xor_dataset, 4 * 10000, 500)
+
 # nn_one_layer.train_batch(shoes_dataset, 50)
 # nn_two_layers.train_batch(shoes_dataset, 50)
 # nn_one_layer_two_inputs.train(and_dataset, 50)
