@@ -77,7 +77,7 @@ def calculate_loss_derivative(
     if loss_name == "mse":
         return (predicted_output - actual_output) * 2
     elif loss_name == "log":
-        return -actual_output.divide(predicted_output) + (1 - actual_output) / (
+        return -actual_output.divide(predicted_output) + (1 - actual_output).divide(
             1 - predicted_output
         )
 

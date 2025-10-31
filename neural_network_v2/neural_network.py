@@ -99,7 +99,9 @@ class NeuralNetwork:
 
         predicted_output = calculated_layers[-1]
 
-        d_loss_d_y = calculate_loss_derivative(predicted_output, actual_output)
+        d_loss_d_y = calculate_loss_derivative(
+            predicted_output, actual_output, self.loss_name
+        )
 
         # print("d_loss_d_y", d_loss_d_y)
 
@@ -125,22 +127,24 @@ class NeuralNetwork:
         return
 
     def back_propagate_batch(self, batch: list[DataItem]):
-        print("Starting back propagate for batch")
+        # print("Starting back propagate for batch")
         predictions = [self.forward(item["input"]) for item in batch]
 
         all_batch_weight_slopes: list[list[Matrix]] = []
 
         for item_index, item in enumerate(batch):
-            print(f"item_index {item_index}")
+            # print(f"item_index {item_index}")
             actual_output = get_vector(item["output"])
             calculated_layers = predictions[item_index]
             predicted_output = calculated_layers[-1]
 
-            print(f"predicted_output {predicted_output}")
-            print(f"actual_output {actual_output}")
+            # print(f"predicted_output {predicted_output}")
+            # print(f"actual_output {actual_output}")
 
-            initial_gradient = (predicted_output - actual_output) * 2
-            output_gradient = initial_gradient
+            d_loss_d_y = calculate_loss_derivative(
+                predicted_output, actual_output, self.loss_name
+            )
+            output_gradient = d_loss_d_y
 
             nn_weight_slopes: list[Matrix] = []
 
@@ -164,13 +168,13 @@ class NeuralNetwork:
         # Calculate mean weight slopes for all examples in the batch
         mean_batch_weight_slopes = calculate_mean_weight_slopes(all_batch_weight_slopes)
 
-        print("mean_batch_weight_slopes", mean_batch_weight_slopes)
+        # print("mean_batch_weight_slopes", mean_batch_weight_slopes)
 
         # Update whole NN weights using batch mean slopes
         for index, weight_slopes in enumerate(mean_batch_weight_slopes):
             self.layers[index].update_weights(weight_slopes)
 
-        print("new weights", self.layers)
+        # print("new weights", self.layers)
 
     def train_sgd(self, data: list[DataItem], epochs: int, render_every=1000):
         """
