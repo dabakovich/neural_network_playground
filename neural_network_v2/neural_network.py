@@ -1,4 +1,5 @@
 import math
+from typing import Literal
 from neural_network_v2.types import LayerConfig
 
 
@@ -176,12 +177,14 @@ class NeuralNetwork:
 
         # print("new weights", self.layers)
 
-    def train_sgd(self, data: list[DataItem], epochs: int, render_every=1000):
-        """
-        Train SGD (stochastic gradient descent)
-        It takes random item from the all dataset list and makes back propagate for one example
-        """
-        data_tuples = [(item["input"], item["output"]) for item in data]
+    def train(
+        self,
+        data: list[DataItem],
+        epochs: int,
+        stop_on_loss: int = None,
+        render_every=1000,
+        method: Literal["batch", "sgd"] = "sgd",
+    ):
         losses = []
 
         print("initial loss", self.calculate_loss(data))
@@ -190,18 +193,35 @@ class NeuralNetwork:
         init_plot()
 
         for iteration in range(epochs):
-            date_item_index = math.floor(get_random(0, len(data)))
-            # print("random data item index", date_item_index)
+            # SGD method takes random item from the all dataset list and makes back propagate for one example
+            if method == "sgd":
+                for i in range(len(data)):
+                    date_item_index = math.floor(get_random(0, len(data)))
+                    # print("random data item index", date_item_index)
 
-            data_item = data[date_item_index]
-            # print("data_item", data_item)
+                    data_item = data[date_item_index]
+                    # print("data_item", data_item)
 
-            self.back_propagate(data_item["input"], data_item["output"])
+                    self.back_propagate(data_item["input"], data_item["output"])
+
+            # Batch method calculates mean weight slopes and updates weights once per epoch
+            elif method == "batch":
+                self.back_propagate_batch(data)
+
+            else:
+                raise ValueError("Unknown train method, should be 'sgd' or 'batch'")
 
             new_loss = self.calculate_loss(data)
             losses.append(new_loss)
 
-            if iteration % render_every == 0 or iteration == 1:
+            is_stop = False
+
+            # Stop training if loss is less than stop_on_loss
+            if stop_on_loss is not None:
+                if new_loss < stop_on_loss:
+                    is_stop = True
+
+            if iteration % render_every == 0 or iteration == 1 or is_stop:
                 print("-" * 20)
                 print("iteration", iteration)
 
@@ -213,36 +233,11 @@ class NeuralNetwork:
 
                 render_losses(losses)
 
-        cleanup_plot()
+            # Stop training if loss is less than stop_on_loss
+            if is_stop:
+                break
 
-    def train_batch(self, data: list[DataItem], epochs: int, render_every=1000):
-        """
-        Train NN over batch examples.
-        It calculates mean weight slopes and updates weights once per epoch
-        """
-        losses = []
-
-        print("initial loss", self.calculate_loss(data))
-
-        # Initialize the plot for real-time updates
-        init_plot()
-
-        for iteration in range(epochs):
-            self.back_propagate_batch(data)
-
-            new_loss = self.calculate_loss(data)
-            losses.append(new_loss)
-
-            if iteration % render_every == 0 or iteration == 1:
-                print("-" * 20)
-                print("iteration", iteration)
-
-                print("new loss", new_loss)
-                print("new weights", self.layers)
-
-                # Update plot
-                render_nn_output(data, lambda x: self.calculate_output(x))
-
-                render_losses(losses)
+        # Print final NN outputs
+        print([(item["input"], self.calculate_output(item["input"])) for item in data])
 
         cleanup_plot()

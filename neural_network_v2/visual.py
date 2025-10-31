@@ -106,8 +106,10 @@ def render_nn_output(
         data_x, data_y, data_z, color="red", marker="o", s=100, label="Dataset points"
     )
 
-    X = np.linspace(-0.5, +1.5, 100)
-    Y = np.linspace(-0.5, +1.5, 100)
+    min = -0.5
+    max = 1.5
+    X = np.linspace(min, max, 100)
+    Y = np.linspace(min, max, 100)
 
     X, Y = np.meshgrid(X, Y)
 

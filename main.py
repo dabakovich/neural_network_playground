@@ -1,9 +1,10 @@
-from functools import reduce
 import math
+from functools import reduce
+
 from neural_network_v2.datasets import (
+    and_dataset,
     not_dataset,
     shoes_dataset,
-    and_dataset,
     test_2d_parabola_dataset,
     xor_dataset,
 )
@@ -12,7 +13,6 @@ from neural_network_v2.neural_network import NeuralNetwork
 from shared.helpers import get_random
 from shared.matrix import Matrix
 from shared.vector import Vector
-
 
 nn_one_layer = NeuralNetwork(
     [
@@ -39,14 +39,15 @@ nn_one_layer_two_inputs_sigmoid = NeuralNetwork(
     loss_name="log",
 )
 
+
 nn_two_layers_two_inputs_sigmoid = NeuralNetwork(
     [
         {"input_size": 2, "output_size": 2, "activation": "tanh"},
         {"input_size": 2, "output_size": 1, "activation": "sigmoid"},
     ],
     # [[[-1.2, 2.1, -0.6], [1.2, -0.2, 0.4]], [[-0.1, 0.2, 0.5]]],
-    learning_rate=0.2,
-    # loss_name="log",
+    learning_rate=0.1,
+    loss_name="log",
 )
 
 nn_two_layers = NeuralNetwork(
@@ -69,15 +70,31 @@ nn_one_layer_two_inputs = NeuralNetwork(
 # nn_one_layer_sigmoid.train_batch(not_dataset, 500)
 
 # Working example for AND
-nn_one_layer_two_inputs_sigmoid.train_batch(and_dataset, 10000, 10)
+# nn_one_layer_two_inputs_sigmoid.train_batch(and_dataset, 10000, 10)
 # nn_two_layers_two_inputs_sigmoid.train_batch(and_dataset, 500)
 
 
+"""
+Most effective XOR:
+- tanh activation in the hidden layer
+-- (relu also work, but less effective; also relu breaks with log loss since it couldn't divide by 0)
+- asymmetric random weights (0 to 0.5), zeros for bias
+- fast learning rate (0.1, 0.2)
+"""
 # Working example for XOR
-# nn_two_layers_two_inputs_sigmoid.train_sgd(xor_dataset, 4 * 10000, 10)
+# nn_one_layer_two_inputs_sigmoid.train(
+nn_two_layers_two_inputs_sigmoid.train(
+    # data=and_dataset,
+    data=xor_dataset,
+    epochs=10000,
+    stop_on_loss=0.01,
+    # stop_on_loss=0.05,
+    render_every=100,
+    method="sgd",
+)
 
 # Not stable example for XOR
-# nn_two_layers_two_inputs_sigmoid.train_batch(xor_dataset, 4 * 10000, 500)
+# nn_two_layers_two_inputs_sigmoid.train(xor_dataset, 40000, 1000, method="batch")
 
 # nn_one_layer.train_batch(shoes_dataset, 50)
 # nn_two_layers.train_batch(shoes_dataset, 50)
