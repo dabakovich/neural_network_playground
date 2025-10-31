@@ -46,7 +46,7 @@ nn_two_layers_two_inputs_sigmoid = NeuralNetwork(
         {"input_size": 2, "output_size": 1, "activation": "sigmoid"},
     ],
     # [[[-1.2, 2.1, -0.6], [1.2, -0.2, 0.4]], [[-0.1, 0.2, 0.5]]],
-    learning_rate=0.1,
+    learning_rate=0.2,
     loss_name="log",
 )
 
@@ -87,10 +87,11 @@ nn_two_layers_two_inputs_sigmoid.train(
     # data=and_dataset,
     data=xor_dataset,
     epochs=10000,
-    stop_on_loss=0.01,
-    # stop_on_loss=0.05,
-    render_every=100,
-    method="sgd",
+    batch_size=2,
+    # stop_on_loss=0.01,
+    stop_on_loss=0.05,
+    # render_every=100,
+    render_every=1000,
 )
 
 # Not stable example for XOR

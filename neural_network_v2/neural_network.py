@@ -1,10 +1,9 @@
 import math
-from typing import Literal
-from neural_network_v2.types import LayerConfig
-
+import random
 
 import matplotlib.pyplot as plt
 
+from neural_network_v2.types import LayerConfig
 from shared.helpers import get_random, get_vector
 from shared.matrix import Matrix
 from shared.types import InputMatrix, InputVector
@@ -181,9 +180,9 @@ class NeuralNetwork:
         self,
         data: list[DataItem],
         epochs: int,
+        batch_size: int = 1,
         stop_on_loss: int = None,
         render_every=1000,
-        method: Literal["batch", "sgd"] = "sgd",
     ):
         losses = []
 
@@ -194,8 +193,8 @@ class NeuralNetwork:
 
         for iteration in range(epochs):
             # SGD method takes random item from the all dataset list and makes back propagate for one example
-            if method == "sgd":
-                for i in range(len(data)):
+            if batch_size == 1:
+                for _ in range(len(data)):
                     date_item_index = math.floor(get_random(0, len(data)))
                     # print("random data item index", date_item_index)
 
@@ -205,11 +204,17 @@ class NeuralNetwork:
                     self.back_propagate(data_item["input"], data_item["output"])
 
             # Batch method calculates mean weight slopes and updates weights once per epoch
-            elif method == "batch":
-                self.back_propagate_batch(data)
-
             else:
-                raise ValueError("Unknown train method, should be 'sgd' or 'batch'")
+                # Shuffle the data for each epoch to introduce stochasticity
+                random.shuffle(data)
+
+                # Split data into batches
+                batches = [
+                    data[i : i + batch_size] for i in range(0, len(data), batch_size)
+                ]
+
+                for batch in batches:
+                    self.back_propagate_batch(batch)
 
             new_loss = self.calculate_loss(data)
             losses.append(new_loss)

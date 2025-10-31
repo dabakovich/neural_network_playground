@@ -28,12 +28,18 @@ def build_layer(layer_config: LayerConfig) -> Matrix:
 
     # Iterate over output neurons
     for n_index in range(layer_config["output_size"]):
+        min_weight = 0
+        max_weight = 0.5
         weights_and_bias = Vector(
-            [get_random(0, 1) for _ in range(layer_config["input_size"])]
+            [
+                get_random(min_weight, max_weight)
+                for _ in range(layer_config["input_size"])
+            ]
         )
         # Ad bias value
         weights_and_bias.values.append(0)
         # weights_and_bias.values.append(get_random(-0.5, 0.5))
+        # weights_and_bias.values.append(get_random(0, 2))
         # weights_and_bias.values.append(get_random(-1, 1))
 
         weights.vectors.append(weights_and_bias)
