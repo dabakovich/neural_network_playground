@@ -1,10 +1,7 @@
-from shared.helpers import get_matrix
-from shared.matrix import Matrix
-from shared.types import InputMatrix
-from shared.vector import Vector
+import numpy as np
 
 from .helpers import activate, derivate
-from .types import Activator, LayerConfig
+from .types import Activator, LayerConfig, Matrix, Vector
 
 
 class Layer:
@@ -15,15 +12,15 @@ class Layer:
     def __init__(
         self,
         layer_config: LayerConfig,
-        weights: InputMatrix,
+        weights: Matrix,
         learning_rate: float,
     ):
         self.layer_config = layer_config
-        self.weights = get_matrix(weights)
+        self.weights = weights
         self.learning_rate = learning_rate
 
     def forward(self, input: Vector) -> Vector:
-        signal: Vector = self.weights * Vector(input.values + [1])
+        signal = self.weights @ np.append(input, 1)
 
         activated_signal = activate(signal, self.get_activator_name())
 
@@ -39,9 +36,12 @@ class Layer:
 
         Also, it calculates weights slopes and updates the layer weights.
         """
+        if self.calculated_layer is None:
+            raise ValueError("Layer was not calculated, call `forward` first")
+
         dy_dn = derivate(self.calculated_layer, self.get_activator_name())
 
-        gradient = gradient.multiply(dy_dn)
+        gradient *= dy_dn
 
         # print("gradient", gradient)
 
@@ -49,22 +49,25 @@ class Layer:
         # We could use it for:
         # - Multiplying by input matrix to get weight slopes
         # - Multiplying by transpose weights matrix to get next gradient
-        transposed_gradient = Matrix([gradient]).transpose()
+        transposed_gradient = gradient[np.newaxis, :].T
 
         # We need transpose weights when moving backward, biases will be the last vector in the matrix
         transposed_weights = self.weights.transpose()
 
         # Remove last biases vector in the transposed_weights matrix, since biases doesn't depend on layer input
-        transposed_weights = Matrix(transposed_weights.vectors[:-1])
+        transposed_weights = transposed_weights[:-1, :]
 
         # Calculate gradient for "next" layer
-        next_gradient_matrix = transposed_weights * transposed_gradient
-        next_gradient_vector: Vector = next_gradient_matrix.transpose().vectors[0]
+        next_gradient_matrix = transposed_weights @ transposed_gradient
+        next_gradient_vector = next_gradient_matrix.T[0]
 
         # CALCULATE WEIGHT SLOPES AND UPDATE WEIGHTS
-        input_matrix_with_bias = Matrix([input.values + [1]])
 
-        weight_slopes: Matrix = transposed_gradient * input_matrix_with_bias
+        # Add `1` for bias calculations and make vector as "horizontal" matrix
+        input_matrix_with_bias = np.append(input, 1)[np.newaxis, :]
+
+        # !!! NOT FINISHED HERE
+        weight_slopes = transposed_gradient @ input_matrix_with_bias
 
         # print("weight_slopes", weight_slopes)
 

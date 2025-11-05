@@ -1,13 +1,9 @@
 import math
 import random
 
-import matplotlib.pyplot as plt
+import numpy as np
 
-from neural_network_v2.types import LayerConfig
-from shared.helpers import get_random, get_vector
-from shared.matrix import Matrix
-from shared.types import InputMatrix, InputVector
-from shared.vector import Vector
+from shared.helpers import get_random
 
 from .helpers import (
     build_layers,
@@ -16,30 +12,32 @@ from .helpers import (
     calculate_mean_weight_slopes,
 )
 from .layer import Layer
-from .types import DataItem, LayerConfig, Loss
+from .types import DataItem, LayerConfig, Loss, Matrix, Vector
 from .visual import (
     cleanup_plot,
     init_plot,
     render_losses,
-    render_nn_output,
-    render_plot,
+    # render_nn_output,
 )
 
 
 class NeuralNetwork:
     layers: list[Layer]
+    loss_name: Loss
 
     def __init__(
         self,
         layer_configs: list[LayerConfig],
-        weights_list: list[InputMatrix] = None,
+        weights_list_parameter: list[Matrix] | None = None,
         learning_rate=0.01,
         loss_name: Loss = "mse",
     ):
         self.layer_configs = layer_configs
 
-        if weights_list is None:
+        if weights_list_parameter is None:
             weights_list = build_layers(layer_configs)
+        else:
+            weights_list = weights_list_parameter
 
         layers = []
         for index, layer_config in enumerate[LayerConfig](layer_configs):
@@ -50,10 +48,8 @@ class NeuralNetwork:
         self.learning_rate = learning_rate
         self.loss_name = loss_name
 
-    def forward(self, input: InputVector) -> list[Vector]:
-        input = get_vector(input)
-
-        next_input = input.clone()
+    def forward(self, input: Vector) -> list[Vector]:
+        next_input = input.copy()
         calculated_layers: list[Vector] = [next_input]
 
         for layer in self.layers:
@@ -63,20 +59,18 @@ class NeuralNetwork:
 
         return calculated_layers
 
-    def calculate_output(self, input: InputVector) -> Vector:
-        input = get_vector(input)
-
+    def calculate_output(self, input: Vector) -> Vector:
         return self.forward(input)[-1]
 
     def calculate_loss(self, batch: list[DataItem]) -> float:
-        actual_items = [item["output"] for item in batch]
-        predicted_items = [self.calculate_output(item["input"]) for item in batch]
+        true_items = [np.array(item["output"]) for item in batch]
+        pred_items = [self.calculate_output(np.array(item["input"])) for item in batch]
 
-        loss = calculate_loss(actual_items, predicted_items, self.loss_name)
+        loss = calculate_loss(pred_items, true_items, self.loss_name)
 
         return loss
 
-    def back_propagate(self, input: InputVector, actual_output: InputVector):
+    def back_propagate(self, input: Vector, true_output: Vector):
         """
         Back propagate neural network and update weights
 
@@ -88,20 +82,15 @@ class NeuralNetwork:
         -- Calculate gradients for "next" layer output by multiplying weights matrix by "prev" gradients (like in forward signal propagation, but reverse)
         -- Update weights using the weight slopes matrix
         """
-        input = get_vector(input)
-        actual_output = get_vector(actual_output)
-
         # print("initial weights", self.layers)
 
         calculated_layers = self.forward(input)
 
         # print("calculated_layers", calculated_layers)
 
-        predicted_output = calculated_layers[-1]
+        pred_output = calculated_layers[-1]
 
-        d_loss_d_y = calculate_loss_derivative(
-            predicted_output, actual_output, self.loss_name
-        )
+        d_loss_d_y = calculate_loss_derivative(pred_output, true_output, self.loss_name)
 
         # print("d_loss_d_y", d_loss_d_y)
 
@@ -128,13 +117,13 @@ class NeuralNetwork:
 
     def back_propagate_batch(self, batch: list[DataItem]):
         # print("Starting back propagate for batch")
-        predictions = [self.forward(item["input"]) for item in batch]
+        predictions = [self.forward(np.array(item["input"])) for item in batch]
 
         all_batch_weight_slopes: list[list[Matrix]] = []
 
-        for item_index, item in enumerate(batch):
+        for item_index, item in enumerate[DataItem](batch):
             # print(f"item_index {item_index}")
-            actual_output = get_vector(item["output"])
+            actual_output = np.array(item["output"])
             calculated_layers = predictions[item_index]
             predicted_output = calculated_layers[-1]
 
@@ -165,6 +154,7 @@ class NeuralNetwork:
             # Append neural network example weight slopes to the whole batch weight slopes list
             all_batch_weight_slopes.append(nn_weight_slopes)
 
+        # print("all_batch_weight_slopes", all_batch_weight_slopes)
         # Calculate mean weight slopes for all examples in the batch
         mean_batch_weight_slopes = calculate_mean_weight_slopes(all_batch_weight_slopes)
 
@@ -181,7 +171,7 @@ class NeuralNetwork:
         data: list[DataItem],
         epochs: int,
         batch_size: int = 1,
-        stop_on_loss: int = None,
+        stop_on_loss: int | None = None,
         render_every=1000,
     ):
         losses = []
@@ -201,7 +191,9 @@ class NeuralNetwork:
                     data_item = data[date_item_index]
                     # print("data_item", data_item)
 
-                    self.back_propagate(data_item["input"], data_item["output"])
+                    self.back_propagate(
+                        np.array(data_item["input"]), np.array(data_item["output"])
+                    )
 
             # Batch method calculates mean weight slopes and updates weights once per epoch
             else:
@@ -234,7 +226,7 @@ class NeuralNetwork:
                 print("new weights", self.layers)
 
                 # Update plot
-                render_nn_output(data, lambda x: self.calculate_output(x))
+                # render_nn_output(data, lambda x: self.calculate_output(x))
 
                 render_losses(losses)
 
@@ -243,6 +235,14 @@ class NeuralNetwork:
                 break
 
         # Print final NN outputs
-        print([(item["input"], self.calculate_output(item["input"])) for item in data])
+        print(
+            [
+                (
+                    np.array(item["input"]),
+                    self.calculate_output(np.array(item["input"])),
+                )
+                for item in data
+            ]
+        )
 
         cleanup_plot()

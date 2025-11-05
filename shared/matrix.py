@@ -5,7 +5,7 @@ from .vector import Vector
 class Matrix:
     vectors: list[Vector]
 
-    def __init__(self, vectors: list[Vector] or list[list[int or float]] = None):
+    def __init__(self, vectors: list[Vector] | list[list[int | float]] | None = None):
         if vectors is None:
             vectors = []
 
@@ -48,7 +48,7 @@ class Matrix:
             transposed_matrix = value.transpose()
 
             for row_index in range(len(self.vectors)):
-                new_row: list[int or float] = []
+                new_row: list[int | float] = []
 
                 for column_index in range(len(value.vectors[0])):
                     new_row.append(

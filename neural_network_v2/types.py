@@ -1,13 +1,19 @@
 from typing import Literal, TypedDict
 
-from shared.vector import Vector
-
-type NeuronBiasAndWeights = Vector
-
+import numpy.typing as npt
 
 type Loss = Literal["mse", "log"]
 
 type Activator = Literal["linear", "relu", "sigmoid", "tanh"]
+
+# type Vector = np.ndarray[np.float64, np._1DShapeT]
+type Vector = npt.NDArray
+# type Vector = np.ndarray[np._1DShapeT]
+
+type Matrix = npt.NDArray
+# type Matrix = np.ndarray[np._2DShapeT_co]
+
+type NeuronBiasAndWeights = Vector
 
 
 class LayerConfig(TypedDict):
@@ -17,5 +23,5 @@ class LayerConfig(TypedDict):
 
 
 class DataItem(TypedDict):
-    input: list[int or float]
-    output: list[int or float]
+    input: list[int | float]
+    output: list[int | float]

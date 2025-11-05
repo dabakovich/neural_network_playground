@@ -3,9 +3,7 @@ from typing import Callable
 import matplotlib.pyplot as plt
 import numpy as np
 
-from neural_network_v2.types import DataItem
-from shared.types import InputVector
-from shared.vector import Vector
+from neural_network_v2.types import DataItem, Vector
 
 # Global variables to persist figure and axes
 fig = None
@@ -41,7 +39,7 @@ def init_plot():
 
 def render_plot(
     data: list[tuple[int, int]],
-    get_nn_output: Callable[[InputVector], list[Vector]],
+    get_nn_output: Callable[[Vector], list[Vector]],
     losses: list[int],
 ):
     """Update the existing plot with new data"""
@@ -69,7 +67,7 @@ def render_plot(
     Y = []
     for x in X:
         output = get_nn_output([x])
-        Y.append(output[-1].values[0])
+        Y.append(output[-1][0])
 
     ax.plot(X, Y, label="Neural network prediction")
     ax.legend()
@@ -84,7 +82,7 @@ def render_plot(
 # Renders 3D plot of neural network output where x and y are inputs and z is output
 def render_nn_output(
     data: list[DataItem],
-    get_nn_output: Callable[[InputVector], Vector],
+    get_nn_output: Callable[[Vector], Vector],
 ):
     global fig, ax
 
@@ -113,7 +111,7 @@ def render_nn_output(
 
     X, Y = np.meshgrid(X, Y)
 
-    Z = [get_nn_output([x, y]).values[0] for x, y in zip(X.flatten(), Y.flatten())]
+    Z = [get_nn_output([x, y])[0] for x, y in zip(X.flatten(), Y.flatten())]
 
     Z = np.array(Z).reshape(X.shape)
 
