@@ -49,8 +49,8 @@ class TestHelpers(unittest.TestCase):
 
     def test_calculate_loss_same_vectors(self):
         """Test MSE calculation with identical vectors"""
-        output = [np.array([1.0, 2.0, 3.0])]
-        expected = [np.array([1.0, 2.0, 3.0])]
+        output = np.array([[1.0], [2.0], [3.0]])
+        expected = np.array([[1.0], [2.0], [3.0]])
 
         result = calculate_loss(output, expected, "mse")
 
@@ -58,8 +58,8 @@ class TestHelpers(unittest.TestCase):
 
     def test_calculate_loss_different_vectors(self):
         """Test MSE calculation with different vectors"""
-        output = [np.array([1.0, 2.0, 3.0])]
-        expected = [np.array([2.0, 3.0, 4.0])]
+        output = np.array([[1.0], [2.0], [3.0]])
+        expected = np.array([[2.0], [3.0], [4.0]])
 
         result = calculate_loss(output, expected, "mse")
 
@@ -69,8 +69,8 @@ class TestHelpers(unittest.TestCase):
 
     def test_calculate_loss_with_vector_objects(self):
         """Test MSE calculation with numpy array vectors"""
-        output = [np.array([1.0, 2.0])]
-        expected = [np.array([3.0, 4.0])]
+        output = np.array([[1.0], [2.0]])
+        expected = np.array([[3.0], [4.0]])
 
         result = calculate_loss(output, expected, "mse")
 

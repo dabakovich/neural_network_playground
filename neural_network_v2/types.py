@@ -1,4 +1,4 @@
-from typing import Literal, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 import numpy.typing as npt
 
@@ -19,7 +19,7 @@ type NeuronBiasAndWeights = Vector
 class LayerConfig(TypedDict):
     input_size: int
     output_size: int
-    activation: Activator
+    activation: NotRequired[Activator]
 
 
 class DataItem(TypedDict):

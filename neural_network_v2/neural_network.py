@@ -62,11 +62,10 @@ class NeuralNetwork:
     def calculate_output(self, input: Vector) -> Vector:
         return self.forward(input)[-1]
 
-    def calculate_loss(self, batch: list[DataItem]) -> float:
-        true_items = [np.array(item["output"]) for item in batch]
-        pred_items = [self.calculate_output(np.array(item["input"])) for item in batch]
+    def calculate_loss(self, x_list: np.ndarray, y_list: np.ndarray) -> float:
+        pred_items = np.array([self.calculate_output(x) for x in x_list])
 
-        loss = calculate_loss(pred_items, true_items, self.loss_name)
+        loss = calculate_loss(pred_items, y_list, self.loss_name)
 
         return loss
 
@@ -115,24 +114,22 @@ class NeuralNetwork:
         # print("New weights", self.layers)
         return
 
-    def back_propagate_batch(self, batch: list[DataItem]):
+    def back_propagate_batch(self, x_batch: np.ndarray, y_batch: np.ndarray):
         # print("Starting back propagate for batch")
-        predictions = [self.forward(np.array(item["input"])) for item in batch]
+        predictions = [self.forward(x) for x in x_batch]
 
         all_batch_weight_slopes: list[list[Matrix]] = []
 
-        for item_index, item in enumerate[DataItem](batch):
+        for index, x in enumerate(x_batch):
             # print(f"item_index {item_index}")
-            actual_output = np.array(item["output"])
-            calculated_layers = predictions[item_index]
-            predicted_output = calculated_layers[-1]
+            true_y = y_batch[index]
+            calculated_layers = predictions[index]
+            pred_y = calculated_layers[-1]
 
             # print(f"predicted_output {predicted_output}")
             # print(f"actual_output {actual_output}")
 
-            d_loss_d_y = calculate_loss_derivative(
-                predicted_output, actual_output, self.loss_name
-            )
+            d_loss_d_y = calculate_loss_derivative(pred_y, true_y, self.loss_name)
             output_gradient = d_loss_d_y
 
             nn_weight_slopes: list[Matrix] = []
@@ -168,15 +165,16 @@ class NeuralNetwork:
 
     def train(
         self,
-        data: list[DataItem],
+        x_list: np.ndarray,
+        y_list: np.ndarray,
         epochs: int,
         batch_size: int = 1,
-        stop_on_loss: int | None = None,
+        stop_on_loss: float | None = None,
         render_every=1000,
     ):
         losses = []
 
-        print("initial loss", self.calculate_loss(data))
+        print("initial loss", self.calculate_loss(x_list, y_list))
 
         # Initialize the plot for real-time updates
         init_plot()
@@ -184,31 +182,27 @@ class NeuralNetwork:
         for iteration in range(epochs):
             # SGD method takes random item from the all dataset list and makes back propagate for one example
             if batch_size == 1:
-                for _ in range(len(data)):
-                    date_item_index = math.floor(get_random(0, len(data)))
+                for _ in range(len(x_list)):
+                    index = math.floor(get_random(0, len(x_list)))
                     # print("random data item index", date_item_index)
 
-                    data_item = data[date_item_index]
-                    # print("data_item", data_item)
-
-                    self.back_propagate(
-                        np.array(data_item["input"]), np.array(data_item["output"])
-                    )
+                    self.back_propagate(x_list[index], y_list[index])
 
             # Batch method calculates mean weight slopes and updates weights once per epoch
             else:
-                # Shuffle the data for each epoch to introduce stochasticity
-                random.shuffle(data)
+                randomize = np.arange(len(x_list))
+                split_indices = np.arange(1, len(x_list), 1)
 
-                # Split data into batches
-                batches = [
-                    data[i : i + batch_size] for i in range(0, len(data), batch_size)
-                ]
+                # Shuffle the data for each epoch to introduce stochasticity and split into batches
+                np.random.shuffle(randomize)
 
-                for batch in batches:
-                    self.back_propagate_batch(batch)
+                x_batches = np.array_split(x_list[randomize], split_indices)
+                y_batches = np.array_split(y_list[randomize], split_indices)
 
-            new_loss = self.calculate_loss(data)
+                for index, x in enumerate(x_batches):
+                    self.back_propagate_batch(x, y_batches[index])
+
+            new_loss = self.calculate_loss(x_list, y_list)
             losses.append(new_loss)
 
             is_stop = False
@@ -235,14 +229,6 @@ class NeuralNetwork:
                 break
 
         # Print final NN outputs
-        print(
-            [
-                (
-                    np.array(item["input"]),
-                    self.calculate_output(np.array(item["input"])),
-                )
-                for item in data
-            ]
-        )
+        print([(item, self.calculate_output(item)) for item in x_list])
 
         cleanup_plot()

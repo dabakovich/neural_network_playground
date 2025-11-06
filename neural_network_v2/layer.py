@@ -77,7 +77,7 @@ class Layer:
         self.weights = self.weights - (weight_slopes * self.learning_rate)
 
     def get_activator_name(self) -> Activator:
-        return self.layer_config["activation"] or "linear"
+        return self.layer_config.get("activation", "linear")
 
     def __str__(self):
         return self.weights.__str__()

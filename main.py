@@ -1,18 +1,11 @@
-import math
-from functools import reduce
+import pandas as pd
 
-from neural_network_v2.datasets import (
-    and_dataset,
-    not_dataset,
-    shoes_dataset,
-    test_2d_parabola_dataset,
-    xor_dataset,
-)
-from neural_network_v2.helpers import calculate_loss_derivative
 from neural_network_v2.neural_network import NeuralNetwork
-from shared.helpers import get_random
-from shared.matrix import Matrix
-from shared.vector import Vector
+
+and_dataset_path = "datasets/and.csv"
+not_dataset_path = "datasets/not.csv"
+shoes_dataset_path = "datasets/shoes.csv"
+xor_dataset_path = "datasets/xor.csv"
 
 nn_one_layer = NeuralNetwork(
     [
@@ -46,7 +39,7 @@ nn_two_layers_two_inputs_sigmoid = NeuralNetwork(
         {"input_size": 2, "output_size": 1, "activation": "sigmoid"},
     ],
     # [[[-1.2, 2.1, -0.6], [1.2, -0.2, 0.4]], [[-0.1, 0.2, 0.5]]],
-    learning_rate=0.2,
+    learning_rate=0.01,
     loss_name="log",
 )
 
@@ -74,6 +67,11 @@ nn_one_layer_two_inputs = NeuralNetwork(
 # nn_two_layers_two_inputs_sigmoid.train_batch(and_dataset, 500)
 
 
+xor_df = pd.read_csv(xor_dataset_path)
+
+xor_x_list = xor_df[["x1", "x2"]].to_numpy()
+xor_y_list = xor_df[["y1"]].to_numpy()
+
 """
 Most effective XOR:
 - tanh activation in the hidden layer
@@ -84,9 +82,9 @@ Most effective XOR:
 # Working example for XOR
 # nn_one_layer_two_inputs_sigmoid.train(
 nn_two_layers_two_inputs_sigmoid.train(
-    # data=and_dataset,
-    data=xor_dataset,
-    epochs=10000,
+    x_list=xor_x_list,
+    y_list=xor_y_list,
+    epochs=40000,
     batch_size=2,
     # stop_on_loss=0.01,
     stop_on_loss=0.05,

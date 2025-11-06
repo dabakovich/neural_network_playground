@@ -37,8 +37,8 @@ def build_layer(layer_config: LayerConfig) -> Matrix:
 
 
 def calculate_loss(
-    pred_items: list[Vector],
-    true_items: list[Vector],
+    pred_items: np.ndarray,
+    true_items: np.ndarray,
     loss_name: Loss = "mse",
 ) -> float:
     if len(true_items) != len(pred_items):
@@ -47,7 +47,7 @@ def calculate_loss(
     sum = 0
 
     for index, true_y in enumerate[Vector](true_items):
-        pred_y = pred_items[index]
+        pred_y: Vector = pred_items[index]
 
         if loss_name == "mse":
             subtraction = true_y - pred_y
