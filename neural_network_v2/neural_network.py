@@ -17,6 +17,7 @@ from .visual import (
     cleanup_plot,
     init_plot,
     render_losses,
+    render_nn_output_for_two_inputs,
     # render_nn_output,
 )
 
@@ -220,7 +221,9 @@ class NeuralNetwork:
                 print("new weights", self.layers)
 
                 # Update plot
-                # render_nn_output(data, lambda x: self.calculate_output(x))
+                render_nn_output_for_two_inputs(
+                    x_list, y_list, lambda x: self.calculate_output(x)
+                )
 
                 render_losses(losses)
 
