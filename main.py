@@ -41,6 +41,7 @@ nn_two_layers_two_inputs_sigmoid = NeuralNetwork(
     # [[[-1.2, 2.1, -0.6], [1.2, -0.2, 0.4]], [[-0.1, 0.2, 0.5]]],
     learning_rate=0.01,
     loss_name="log",
+    render_loss=True,
 )
 
 nn_two_layers = NeuralNetwork(

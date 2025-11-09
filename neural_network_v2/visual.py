@@ -7,37 +7,43 @@ from neural_network_v2.types import Vector
 
 # Global variables to persist figure and axes
 fig = None
-ax_3d = None
-bx = None
+nn_output_axes_3d = None
+weight_loss_axes_3d = None
+loss_axes = None
 
 
 def set_labels():
-    global fig, ax_3d, bx
+    global fig, nn_output_axes_3d, loss_axes
 
-    if ax_3d is None or bx is None:
+    if nn_output_axes_3d is None or weight_loss_axes_3d is None or loss_axes is None:
         raise ValueError("Init ax_3d and bx first")
 
     # Set labels (these don't change)
-    ax_3d.set_xlabel("X_1")
-    ax_3d.set_ylabel("X_2")
-    ax_3d.set_zlabel("Y")
+    nn_output_axes_3d.set_xlabel("X_1")
+    nn_output_axes_3d.set_ylabel("X_2")
+    nn_output_axes_3d.set_zlabel("Y")
 
-    bx.set_xlabel("Iterations")
-    bx.set_ylabel("Loss")
+    # Set labels (these don't change)
+    weight_loss_axes_3d.set_xlabel("W_1")
+    weight_loss_axes_3d.set_ylabel("W_2")
+    weight_loss_axes_3d.set_zlabel("Loss")
+
+    loss_axes.set_xlabel("Iterations")
+    loss_axes.set_ylabel("Loss")
 
 
 def init_plot():
     """Initialize the plot for real-time updates"""
-    global fig, ax_3d, bx
+    global fig, nn_output_axes_3d, weight_loss_axes_3d, loss_axes
 
     # Enable interactive mode
     plt.ion()
 
     # Create figure and axes once
     fig = plt.figure(figsize=(10, 8))
-    # ax = fig.add_subplot(1, 2, 1)
-    ax_3d = fig.add_subplot(1, 2, 1, projection="3d")
-    bx = fig.add_subplot(1, 2, 2)
+    nn_output_axes_3d = fig.add_subplot(2, 2, 1, projection="3d")
+    loss_axes = fig.add_subplot(2, 2, 2)
+    weight_loss_axes_3d = fig.add_subplot(2, 2, 3, projection="3d")
 
     print("Plot initialized for real-time updates...")
 
@@ -48,13 +54,13 @@ def render_nn_output_for_two_inputs(
     y: np.ndarray,
     get_nn_output: Callable[[Vector], Vector],
 ):
-    global fig, ax_3d
+    global fig, nn_output_axes_3d
 
-    if fig is None or ax_3d is None:
+    if fig is None or nn_output_axes_3d is None:
         print("Warning: Plot not initialized. Call init_plot() first.")
         return
 
-    ax_3d.clear()
+    nn_output_axes_3d.clear()
     set_labels()
 
     data_x = x[:, 0]
@@ -62,7 +68,7 @@ def render_nn_output_for_two_inputs(
     data_z = y[:, 0]
 
     # Plot dataset points
-    ax_3d.scatter(
+    nn_output_axes_3d.scatter(
         xs=data_x,
         ys=data_y,
         zs=data_z,  # type: ignore
@@ -85,30 +91,88 @@ def render_nn_output_for_two_inputs(
 
     Z = Z.reshape(X.shape)
 
-    ax_3d.plot_surface(X, Y, Z)
+    nn_output_axes_3d.plot_surface(X, Y, Z)
 
     # Draw the updates
     fig.canvas.draw()
     fig.canvas.flush_events()
 
 
-def render_losses(losses: list[int]):
-    """Update the existing plot with new data"""
-    global fig, bx
+def render_weight_loss_plot_3d(
+    weight_history: list[tuple[float, float]],
+    get_loss: Callable[[Vector], float],
+):
+    global fig, weight_loss_axes_3d
 
-    if fig is None or bx is None:
+    if fig is None or weight_loss_axes_3d is None:
         print("Warning: Plot not initialized. Call init_plot() first.")
         return
 
-    bx.clear()
+    weight_loss_axes_3d.clear()
+    set_labels()
+
+    # first_point = weight_history[0]
+    # print(first_point)
+    # print([first_point[0], first_point[1], get_loss(np.array(first_point))])
+
+    points = np.array(
+        [[point[0], point[1], get_loss(np.array(point))] for point in weight_history]
+    ).T
+
+    # Plot dataset points
+    weight_loss_axes_3d.plot(
+        xs=points[0],
+        ys=points[1],
+        zs=points[2],  # type: ignore
+        color="green",
+        marker="x",
+        # s=10,
+        label="Weights point",
+    )
+
+    # Plot dataset points
+    weight_loss_axes_3d.scatter(
+        *points.T[-1],  # type: ignore
+        color="red",
+        marker="o",
+        s=10,
+        label="Weights point",
+    )
+
+    X = np.linspace(np.min(points[0]) - 1, np.max(points[0]) + 1, 100)
+    Y = np.linspace(np.min(points[1]) - 1, np.max(points[1]) + 1, 100)
+
+    X, Y = np.meshgrid(X, Y)
+
+    grid_points = np.stack([X.flatten(), Y.flatten()], axis=1)
+
+    Z = np.apply_along_axis(lambda point: get_loss(point), 1, grid_points)
+
+    Z = Z.reshape(X.shape)
+
+    weight_loss_axes_3d.plot_surface(X, Y, Z)
+
+    fig.canvas.draw()
+    fig.canvas.flush_events()
+
+
+def render_losses(losses: list[int]):
+    """Update the existing plot with new data"""
+    global fig, loss_axes
+
+    if fig is None or loss_axes is None:
+        print("Warning: Plot not initialized. Call init_plot() first.")
+        return
+
+    loss_axes.clear()
     set_labels()
 
     # Render loss graph
     loss_points = np.array(losses)
     loss_X = range(0, len(losses))
     loss_Y = loss_points
-    bx.plot(loss_X, loss_Y, label=f"Current loss: {losses[-1]:.4f}")
-    bx.legend()
+    loss_axes.plot(loss_X, loss_Y, label=f"Current loss: {losses[-1]:.4f}")
+    loss_axes.legend()
 
     # Draw the updates
     fig.canvas.draw()
@@ -117,7 +181,7 @@ def render_losses(losses: list[int]):
 
 def cleanup_plot():
     """Clean up the plot when done"""
-    global fig, ax_3d, bx
+    global fig, nn_output_axes_3d, loss_axes
 
     plt.ioff()  # Turn off interactive mode
     if fig is not None:
@@ -125,6 +189,6 @@ def cleanup_plot():
         plt.close(fig)
 
     fig = None
-    ax_3d = None
-    bx = None
+    nn_output_axes_3d = None
+    loss_axes = None
     print("Plot cleanup completed.")

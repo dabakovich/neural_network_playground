@@ -20,8 +20,3 @@ class LayerConfig(TypedDict):
     input_size: int
     output_size: int
     activation: NotRequired[Activator]
-
-
-class DataItem(TypedDict):
-    input: list[int | float]
-    output: list[int | float]

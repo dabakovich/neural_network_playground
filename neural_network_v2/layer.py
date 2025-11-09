@@ -19,8 +19,11 @@ class Layer:
         self.weights = weights
         self.learning_rate = learning_rate
 
-    def forward(self, input: Vector) -> Vector:
-        signal = self.weights @ np.append(input, 1)
+    def forward(self, input: Vector, weights_override: Matrix | None = None) -> Vector:
+        if weights_override is not None:
+            signal = weights_override @ np.append(input, 1)
+        else:
+            signal = self.weights @ np.append(input, 1)
 
         activated_signal = activate(signal, self.get_activator_name())
 

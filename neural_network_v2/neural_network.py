@@ -1,5 +1,4 @@
 import math
-import random
 
 import numpy as np
 
@@ -12,12 +11,13 @@ from .helpers import (
     calculate_mean_weight_slopes,
 )
 from .layer import Layer
-from .types import DataItem, LayerConfig, Loss, Matrix, Vector
+from .types import LayerConfig, Loss, Matrix, Vector
 from .visual import (
     cleanup_plot,
     init_plot,
     render_losses,
     render_nn_output_for_two_inputs,
+    render_weight_loss_plot_3d,
     # render_nn_output,
 )
 
@@ -25,6 +25,7 @@ from .visual import (
 class NeuralNetwork:
     layers: list[Layer]
     loss_name: Loss
+    render_loss: bool
 
     def __init__(
         self,
@@ -32,6 +33,7 @@ class NeuralNetwork:
         weights_list_parameter: list[Matrix] | None = None,
         learning_rate=0.01,
         loss_name: Loss = "mse",
+        render_loss=False,
     ):
         self.layer_configs = layer_configs
 
@@ -45,6 +47,11 @@ class NeuralNetwork:
             layer = Layer(layer_config, weights_list[index], learning_rate)
             layers.append(layer)
         self.layers = layers
+
+        if render_loss:
+            self.weight_history: list[tuple[float, float]] = [
+                (self.layers[1].weights[0, 0], self.layers[1].weights[0, 1])
+            ]
 
         self.learning_rate = learning_rate
         self.loss_name = loss_name
@@ -67,6 +74,37 @@ class NeuralNetwork:
         pred_items = np.array([self.calculate_output(x) for x in x_list])
 
         loss = calculate_loss(pred_items, y_list, self.loss_name)
+
+        return loss
+
+    def calculate_loss_for_weights(
+        self,
+        x_list: np.ndarray,
+        y_list: np.ndarray,
+        weight_1: tuple[float, tuple[int, int]],
+        weight_2: tuple[float, tuple[int, int]],
+        layer_index: int,
+    ):
+        pred_items = []
+        for x in x_list:
+            next_input: np.ndarray = x.copy()
+            calculated_layers: list[Vector] = [next_input]
+
+            for index, layer in enumerate(self.layers):
+                if index == layer_index:
+                    weights_override = layer.weights.copy()
+                    weights_override[weight_1[1]] = weight_1[0]
+                    weights_override[weight_2[1]] = weight_2[0]
+                    next_input = layer.forward(next_input, weights_override)
+                else:
+                    next_input = layer.forward(next_input)
+
+                calculated_layers.append(next_input)
+
+            pred_items.append(calculated_layers[-1])
+
+        # Calculate loss
+        loss = calculate_loss(np.array(pred_items), y_list, self.loss_name)
 
         return loss
 
@@ -224,6 +262,22 @@ class NeuralNetwork:
                 render_nn_output_for_two_inputs(
                     x_list, y_list, lambda x: self.calculate_output(x)
                 )
+
+                if self.render_loss:
+                    self.weight_history.append(
+                        (self.layers[1].weights[0, 0], self.layers[1].weights[0, 1])
+                    )
+
+                    render_weight_loss_plot_3d(
+                        self.weight_history,
+                        lambda vector: self.calculate_loss_for_weights(
+                            x_list,
+                            y_list,
+                            (vector[0], (0, 0)),
+                            (vector[1], (0, 1)),
+                            layer_index=1,
+                        ),
+                    )
 
                 render_losses(losses)
 
