@@ -55,6 +55,7 @@ class NeuralNetwork:
 
         self.learning_rate = learning_rate
         self.loss_name = loss_name
+        self.render_loss = render_loss
 
     def forward(self, input: Vector) -> list[Vector]:
         next_input = input.copy()
@@ -259,9 +260,9 @@ class NeuralNetwork:
                 print("new weights", self.layers)
 
                 # Update plot
-                render_nn_output_for_two_inputs(
-                    x_list, y_list, lambda x: self.calculate_output(x)
-                )
+                # render_nn_output_for_two_inputs(
+                #     x_batches[0], y_batches[0], lambda x: self.calculate_output(x)
+                # )
 
                 if self.render_loss:
                     self.weight_history.append(
@@ -285,7 +286,11 @@ class NeuralNetwork:
             if is_stop:
                 break
 
-        # Print final NN outputs
-        print([(item, self.calculate_output(item)) for item in x_list])
+        # Print sample NN outputs
+        randomize = np.arange(len(x_list))
+        np.random.shuffle(randomize)
+        indices = randomize[0:4]
+
+        print([(self.calculate_output(item)) for item in x_list[indices]])
 
         cleanup_plot()
