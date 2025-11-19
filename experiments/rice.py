@@ -22,7 +22,10 @@ x_labels = [
     "Area",
     "Perimeter",
     "Major_Axis_Length",
+    "Minor_Axis_Length",
     "Eccentricity",
+    "Convex_Area",
+    "Extent",
 ]
 y_labels = [
     "Class",
@@ -50,9 +53,9 @@ def show_correlation():
 
 nn = NeuralNetwork(
     [
-        {"input_size": 4, "output_size": 1, "activation": "sigmoid"},
+        {"input_size": 7, "output_size": 1, "activation": "sigmoid"},
     ],
-    learning_rate=0.001,
+    learning_rate=0.01,
     loss_name="log",
 )
 
@@ -64,7 +67,7 @@ def train_nn():
     nn.train(
         x_list=x_list,
         y_list=y_list,
-        epochs=100,
+        epochs=200,
         batch_size=100,
         # stop_on_loss=720,
         render_every=10,
