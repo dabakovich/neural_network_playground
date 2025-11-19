@@ -2,7 +2,7 @@ import numpy as np
 
 from .types import Activator, LayerConfig, Loss, Matrix, Vector
 
-rg = np.random.default_rng(1)
+rg = np.random.default_rng()
 
 
 def build_layers(layer_configs: list[LayerConfig]) -> list[Matrix]:
@@ -21,7 +21,7 @@ def build_layers(layer_configs: list[LayerConfig]) -> list[Matrix]:
 
 
 def build_layer(layer_config: LayerConfig) -> Matrix:
-    min_weight = 0
+    min_weight = -0.5
     max_weight = 0.5
 
     weights = (max_weight - min_weight) * rg.random(
