@@ -109,6 +109,18 @@ class NeuralNetwork:
 
         return loss
 
+    def calculate_accuracy(
+        self,
+        x_list: np.ndarray,
+        y_list: np.ndarray,
+        threshold: float,
+    ):
+        pred_items = np.array(
+            [1 if self.calculate_output(x) >= threshold else 0 for x in x_list]
+        )
+
+        return (y_list.flatten() == pred_items).sum() / len(y_list)
+
     def back_propagate(self, input: Vector, true_output: Vector):
         """
         Back propagate neural network and update weights
@@ -211,10 +223,16 @@ class NeuralNetwork:
         batch_size: int = 1,
         stop_on_loss: float | None = None,
         render_every=1000,
+        threshold: float | None = None,
     ):
         losses = []
 
-        print("initial loss", self.calculate_loss(x_list, y_list))
+        print("Initial loss", self.calculate_loss(x_list, y_list))
+
+        if threshold is not None:
+            print(
+                f"Initial accuracy:{self.calculate_accuracy(x_list, y_list, threshold):.3f}"
+            )
 
         # Initialize the plot for real-time updates
         init_plot()
@@ -252,12 +270,12 @@ class NeuralNetwork:
                 if new_loss < stop_on_loss:
                     is_stop = True
 
-            if iteration % render_every == 0 or iteration == 1 or is_stop:
+            if iteration % render_every == 0 or iteration == 0 or is_stop:
                 print("-" * 20)
                 print("iteration", iteration)
 
                 print("new loss", new_loss)
-                print("new weights", self.layers)
+                # print("new weights", self.layers)
 
                 # Update plot
                 # render_nn_output_for_two_inputs(
@@ -280,6 +298,10 @@ class NeuralNetwork:
                         ),
                     )
 
+                if threshold is not None:
+                    print(
+                        f"acc: {self.calculate_accuracy(x_list, y_list, threshold):.3f}"
+                    )
                 render_losses(losses)
 
             # Stop training if loss is less than stop_on_loss
@@ -291,6 +313,11 @@ class NeuralNetwork:
         np.random.shuffle(randomize)
         indices = randomize[0:4]
 
-        print([(self.calculate_output(item)) for item in x_list[indices]])
+        print(
+            np.array(
+                [(self.calculate_output(item)) for item in x_list[indices]]
+            ).flatten()
+        )
+        print(y_list[indices].flatten())
 
         cleanup_plot()
