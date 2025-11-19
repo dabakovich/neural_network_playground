@@ -249,7 +249,7 @@ class NeuralNetwork:
             # Batch method calculates mean weight slopes and updates weights once per epoch
             else:
                 randomize = np.arange(len(x_list))
-                split_indices = np.arange(1, len(x_list), 1)
+                split_indices = np.arange(1, len(x_list), batch_size)
 
                 # Shuffle the data for each epoch to introduce stochasticity and split into batches
                 np.random.shuffle(randomize)
@@ -302,6 +302,7 @@ class NeuralNetwork:
                     print(
                         f"acc: {self.calculate_accuracy(x_list, y_list, threshold):.3f}"
                     )
+
                 render_losses(losses)
 
             # Stop training if loss is less than stop_on_loss

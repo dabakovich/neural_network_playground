@@ -64,10 +64,10 @@ def train_nn():
     nn.train(
         x_list=x_list,
         y_list=y_list,
-        epochs=60,
+        epochs=100,
         batch_size=100,
         # stop_on_loss=720,
-        render_every=5,
+        render_every=10,
         threshold=0.5,
     )
 
