@@ -58,7 +58,7 @@ def calculate_loss(
         else:
             raise ValueError("Unknown loss function name")
 
-    return sum
+    return sum / len(pred_items)
 
 
 def calculate_loss_derivative(
