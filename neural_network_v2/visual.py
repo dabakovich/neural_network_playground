@@ -156,7 +156,7 @@ def render_weight_loss_plot_3d(
     fig.canvas.flush_events()
 
 
-def render_losses(losses: list[int]):
+def render_losses(losses: list[float]):
     """Update the existing plot with new data"""
     global fig, loss_axes
 

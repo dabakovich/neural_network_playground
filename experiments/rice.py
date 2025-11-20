@@ -63,16 +63,26 @@ x_list = normalized_x_dataset.to_numpy()
 y_list = rice_dataset_2[y_labels].to_numpy()
 
 
+def render_losses(losses: list[float]):
+    plt.plot(losses)
+    plt.xlabel("Epoch")
+    plt.ylabel("Loss")
+    plt.title("Learning history")
+    plt.show()
+
+
 def train_nn():
-    nn.train(
+    losses = nn.train(
         x_list=x_list,
         y_list=y_list,
-        epochs=200,
+        epochs=50,
         batch_size=100,
-        # stop_on_loss=720,
-        render_every=10,
+        stop_on_loss=0.2,
+        # render_every=10,
         threshold=0.5,
     )
+
+    render_losses(losses)
 
 
 train_nn()

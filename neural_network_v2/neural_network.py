@@ -1,4 +1,5 @@
 import math
+import time
 
 import numpy as np
 
@@ -25,7 +26,6 @@ from .visual import (
 class NeuralNetwork:
     layers: list[Layer]
     loss_name: Loss
-    render_loss: bool
 
     def __init__(
         self,
@@ -33,7 +33,6 @@ class NeuralNetwork:
         weights_list_parameter: list[Matrix] | None = None,
         learning_rate=0.01,
         loss_name: Loss = "mse",
-        render_loss=False,
     ):
         self.layer_configs = layer_configs
 
@@ -48,14 +47,8 @@ class NeuralNetwork:
             layers.append(layer)
         self.layers = layers
 
-        if render_loss:
-            self.weight_history: list[tuple[float, float]] = [
-                (self.layers[1].weights[0, 0], self.layers[1].weights[0, 1])
-            ]
-
         self.learning_rate = learning_rate
         self.loss_name = loss_name
-        self.render_loss = render_loss
 
     def forward(self, input: Vector) -> list[Vector]:
         next_input = input.copy()
@@ -222,22 +215,24 @@ class NeuralNetwork:
         epochs: int,
         batch_size: int = 1,
         stop_on_loss: float | None = None,
-        render_every=1000,
+        render_every: int | None = None,
         threshold: float | None = None,
     ):
-        losses = []
+        losses: list[float] = []
 
-        print("Initial loss", self.calculate_loss(x_list, y_list))
+        print(f"Initial loss: {self.calculate_loss(x_list, y_list):.3f}")
 
         if threshold is not None:
             print(
-                f"Initial accuracy:{self.calculate_accuracy(x_list, y_list, threshold):.3f}"
+                f"Initial accuracy: {self.calculate_accuracy(x_list, y_list, threshold):.3f}"
             )
 
-        # Initialize the plot for real-time updates
-        init_plot()
+        if render_every:
+            # Initialize the plot for real-time updates
+            init_plot()
 
-        for iteration in range(epochs):
+        for epoch in range(epochs):
+            time_per_step_ms = 0
             # SGD method takes random item from the all dataset list and makes back propagate for one example
             if batch_size == 1:
                 for _ in range(len(x_list)):
@@ -258,7 +253,11 @@ class NeuralNetwork:
                 y_batches = np.array_split(y_list[randomize], split_indices)
 
                 for index, x in enumerate(x_batches):
+                    start_time = time.time()
                     self.back_propagate_batch(x, y_batches[index])
+                    end_time = time.time()
+
+                    time_per_step_ms = (end_time - start_time) * 1000
 
             new_loss = self.calculate_loss(x_list, y_list)
             losses.append(new_loss)
@@ -270,39 +269,28 @@ class NeuralNetwork:
                 if new_loss < stop_on_loss:
                     is_stop = True
 
-            if iteration % render_every == 0 or iteration == 0 or is_stop:
-                print("-" * 20)
-                print("iteration", iteration)
+            print(f"Epoch {epoch + 1}/{epochs}")
 
-                print("new loss", new_loss)
-                # print("new weights", self.layers)
+            metrics = [
+                f"{time_per_step_ms:.3f}ms/step",
+                f"loss: {new_loss:.3f}",
+            ]
 
-                # Update plot
-                # render_nn_output_for_two_inputs(
-                #     x_batches[0], y_batches[0], lambda x: self.calculate_output(x)
-                # )
+            if threshold is not None:
+                metrics.append(
+                    f"acc: {self.calculate_accuracy(x_list, y_list, threshold):.3f}"
+                )
 
-                if self.render_loss:
-                    self.weight_history.append(
-                        (self.layers[1].weights[0, 0], self.layers[1].weights[0, 1])
-                    )
+            print(" - ".join(metrics))
 
-                    render_weight_loss_plot_3d(
-                        self.weight_history,
-                        lambda vector: self.calculate_loss_for_weights(
-                            x_list,
-                            y_list,
-                            (vector[0], (0, 0)),
-                            (vector[1], (0, 1)),
-                            layer_index=1,
-                        ),
-                    )
+            # print("new weights", self.layers)
 
-                if threshold is not None:
-                    print(
-                        f"acc: {self.calculate_accuracy(x_list, y_list, threshold):.3f}"
-                    )
+            # Update plot
+            # render_nn_output_for_two_inputs(
+            #     x_batches[0], y_batches[0], lambda x: self.calculate_output(x)
+            # )
 
+            if render_every and (epoch % render_every == 0 or epoch == 0 or is_stop):
                 render_losses(losses)
 
             # Stop training if loss is less than stop_on_loss
@@ -322,3 +310,5 @@ class NeuralNetwork:
         print(y_list[indices].flatten())
 
         cleanup_plot()
+
+        return losses
