@@ -24,8 +24,6 @@ def split_dataset(
     train_index = round(number_samples * train_percentage)
     validation_index = train_index + round(number_samples * 0.1)
 
-    print(train_index, validation_index)
-
     train_data = dataset.iloc[0:train_index]
     validation_data = dataset.iloc[train_index:validation_index]
     test_data = dataset.iloc[validation_index:]

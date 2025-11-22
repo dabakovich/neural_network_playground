@@ -3,44 +3,70 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 from neural_network_v2.neural_network import NeuralNetwork
+from shared.helpers import split_dataset
 
 pd.options.display.float_format = "{:.3f}".format
 
 rice_dataset_path = "datasets/Rice_Cammeo_Osmancik.csv"
 
-rice_dataset = pd.read_csv(rice_dataset_path)
-
-print(rice_dataset.describe())
+raw_rice_dataset = pd.read_csv(rice_dataset_path)
 
 
 # sns.pairplot(data=rice_dataset, hue="Class")
 
-rice_dataset = rice_dataset.copy()
-rice_dataset["Class"] = rice_dataset["Class"].map({"Cammeo": 1, "Osmancik": 0})  # pyright: ignore[reportArgumentType]
+rice_dataset = raw_rice_dataset.copy()
+rice_dataset["Class"] = raw_rice_dataset["Class"].map({"Cammeo": 1, "Osmancik": 0})  # pyright: ignore[reportArgumentType]
 
-x_labels = [
+print(rice_dataset.head())
+
+
+rice_x_labels = [
     "Area",
-    "Perimeter",
+    # "Perimeter",
     "Major_Axis_Length",
-    "Minor_Axis_Length",
+    # "Minor_Axis_Length",
     "Eccentricity",
     "Convex_Area",
-    "Extent",
+    # "Extent",
 ]
-y_labels = [
+rice_y_labels = [
     "Class",
 ]
 
-rice_dataset_mean = rice_dataset[x_labels].mean()
-rice_dataset_std = rice_dataset[x_labels].std()
 
-normalized_x_dataset = (rice_dataset[x_labels] - rice_dataset_mean) / rice_dataset_std
+train_rice_dataset, validate_rise_dataset, test_rice_dataset = split_dataset(
+    rice_dataset, 0.8, 0.1, 0.1
+)
 
-# rice_dataset_2[x_labels] = rice_dataset_2[x_labels] / rice_dataset[x_labels].mean()
+threshold = 0.5
+dataset_mean = train_rice_dataset[rice_x_labels].mean()
+dataset_std = train_rice_dataset[rice_x_labels].std()
 
 
-print(normalized_x_dataset.head())
-print(normalized_x_dataset.describe())
+print(len(train_rice_dataset))
+print(len(validate_rise_dataset))
+print(len(test_rice_dataset))
+
+
+def get_normalized_x_y_datasets(
+    dataset: pd.DataFrame, x_labels: list[str], y_labels: list[str]
+):
+    normalized_x_dataset: pd.DataFrame = (
+        dataset[x_labels] - dataset_mean
+    ) / dataset_std
+
+    y_dataset = dataset[y_labels]
+
+    return normalized_x_dataset, y_dataset
+
+
+normalized_train_x_dataset, train_y_dataset = get_normalized_x_y_datasets(
+    train_rice_dataset, rice_x_labels, rice_y_labels
+)
+
+
+train_x_list = normalized_train_x_dataset.to_numpy()
+train_y_list = train_y_dataset.to_numpy()
 
 
 def show_correlation():
@@ -51,17 +77,6 @@ def show_correlation():
 
 # show_correlation()
 
-nn = NeuralNetwork(
-    [
-        {"input_size": 7, "output_size": 1, "activation": "sigmoid"},
-    ],
-    learning_rate=0.01,
-    loss_name="log",
-)
-
-x_list = normalized_x_dataset.to_numpy()
-y_list = rice_dataset[y_labels].to_numpy()
-
 
 def render_losses(losses: list[float]):
     plt.plot(losses)
@@ -71,18 +86,59 @@ def render_losses(losses: list[float]):
     plt.show()
 
 
+nn = NeuralNetwork(
+    [
+        {"input_size": len(rice_x_labels), "output_size": 1, "activation": "sigmoid"},
+    ],
+    learning_rate=0.01,
+    loss_name="log",
+)
+
+
 def train_nn():
     losses = nn.train(
-        x_list=x_list,
-        y_list=y_list,
-        epochs=50,
+        x_list=train_x_list,
+        y_list=train_y_list,
+        epochs=100,
         batch_size=100,
-        stop_on_loss=0.2,
+        stop_on_loss=0.19,
         # render_every=10,
-        threshold=0.5,
+        threshold=threshold,
     )
 
     render_losses(losses)
 
 
+def validate_nn():
+    normalized_validate_x_dataset, validate_y_dataset = get_normalized_x_y_datasets(
+        validate_rise_dataset, rice_x_labels, rice_y_labels
+    )
+
+    x_list = normalized_validate_x_dataset.to_numpy()
+    y_list = validate_y_dataset.to_numpy()
+
+    loss = nn.calculate_loss(x_list, y_list)
+    acc = nn.calculate_accuracy(x_list, y_list, threshold)
+
+    print(f"Validate loss: {loss} -  acc: {acc}")
+
+
+def test_nn():
+    normalized_test_x_dataset, test_y_dataset = get_normalized_x_y_datasets(
+        test_rice_dataset, rice_x_labels, rice_y_labels
+    )
+
+    x_list = normalized_test_x_dataset.to_numpy()
+    y_list = test_y_dataset.to_numpy()
+
+    loss = nn.calculate_loss(x_list, y_list)
+    acc = nn.calculate_accuracy(x_list, y_list, threshold)
+
+    print(f"Test loss: {loss} -  acc: {acc}")
+
+
 train_nn()
+
+validate_nn()
+
+test_nn()
