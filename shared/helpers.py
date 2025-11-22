@@ -1,4 +1,5 @@
 import numpy as np
+from pandas import DataFrame
 
 from .matrix import Matrix
 from .types import InputVector
@@ -7,6 +8,29 @@ from .vector import Vector
 
 def get_random(min_value=0, max_value=1):
     return np.random.random() * (max_value - min_value) + min_value
+
+
+def split_dataset(
+    dataset: DataFrame,
+    train_percentage: float,
+    validation_percentage: float,
+    test_percentage: float,
+):
+    number_samples = len(dataset)
+
+    if train_percentage + validation_percentage + test_percentage > 1:
+        raise ValueError("Percentages should not be higher than 1")
+
+    train_index = round(number_samples * train_percentage)
+    validation_index = train_index + round(number_samples * 0.1)
+
+    print(train_index, validation_index)
+
+    train_data = dataset.iloc[0:train_index]
+    validation_data = dataset.iloc[train_index:validation_index]
+    test_data = dataset.iloc[validation_index:]
+
+    return (train_data, validation_data, test_data)
 
 
 def outer_product(vector1: Vector, vector2: Vector):

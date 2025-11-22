@@ -15,8 +15,8 @@ print(rice_dataset.describe())
 
 # sns.pairplot(data=rice_dataset, hue="Class")
 
-rice_dataset_2 = rice_dataset.copy()
-rice_dataset_2["Class"] = rice_dataset_2["Class"].map({"Cammeo": 1, "Osmancik": 0})  # pyright: ignore[reportArgumentType]
+rice_dataset = rice_dataset.copy()
+rice_dataset["Class"] = rice_dataset["Class"].map({"Cammeo": 1, "Osmancik": 0})  # pyright: ignore[reportArgumentType]
 
 x_labels = [
     "Area",
@@ -31,10 +31,10 @@ y_labels = [
     "Class",
 ]
 
-rice_dataset_mean = rice_dataset_2[x_labels].mean()
-rice_dataset_std = rice_dataset_2[x_labels].std()
+rice_dataset_mean = rice_dataset[x_labels].mean()
+rice_dataset_std = rice_dataset[x_labels].std()
 
-normalized_x_dataset = (rice_dataset_2[x_labels] - rice_dataset_mean) / rice_dataset_std
+normalized_x_dataset = (rice_dataset[x_labels] - rice_dataset_mean) / rice_dataset_std
 
 # rice_dataset_2[x_labels] = rice_dataset_2[x_labels] / rice_dataset[x_labels].mean()
 
@@ -44,7 +44,7 @@ print(normalized_x_dataset.describe())
 
 
 def show_correlation():
-    correlation = rice_dataset_2.corr("spearman")
+    correlation = rice_dataset.corr("spearman")
     sns.heatmap(correlation, vmin=-1, center=0, vmax=1, annot=True)
     plt.show()
 
@@ -60,7 +60,7 @@ nn = NeuralNetwork(
 )
 
 x_list = normalized_x_dataset.to_numpy()
-y_list = rice_dataset_2[y_labels].to_numpy()
+y_list = rice_dataset[y_labels].to_numpy()
 
 
 def render_losses(losses: list[float]):
