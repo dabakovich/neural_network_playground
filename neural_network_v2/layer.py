@@ -1,6 +1,6 @@
 import numpy as np
 
-from .helpers import activate, derivate
+from .helpers import activate, derivate, softmax_derivative
 from .types import Activator, LayerConfig, Matrix, Vector
 
 
@@ -60,6 +60,33 @@ class Layer:
 
         weight_slopes = gradient[:, np.newaxis] @ input[np.newaxis, :]
         biases_slopes = gradient.copy()
+
+        return weight_slopes, biases_slopes, next_gradient
+
+    def backward_softmax(self, input: Vector, gradient: Vector):
+        if self.calculated_layer is None:
+            raise ValueError("Layer was not calculated, call `forward` first")
+
+        # Jacobian
+        d_S_d_n = softmax_derivative(self.calculated_layer)
+
+        d_loss_d_n = gradient[:, np.newaxis] * d_S_d_n
+
+        # Duplicate input to make one input row for each output neuron
+        # Number of columns – is count of input neurons
+        # Number of rows – is count of output neurons
+        input_matrix = input[np.newaxis, :]
+        new_rows = np.tile(input_matrix[0], (len(gradient) - 1, 1))
+        input_matrix = np.vstack((input_matrix, new_rows))
+
+        # d_loss_d_w
+        weight_slopes = d_loss_d_n.T @ input_matrix
+        # d_loss_d_b
+        biases_slopes = (d_loss_d_n.T @ np.ones((len(gradient), 1))).T[0]
+
+        next_gradient_matrix = d_loss_d_n @ self.weights
+
+        next_gradient = np.sum(next_gradient_matrix, axis=0)
 
         return weight_slopes, biases_slopes, next_gradient
 

@@ -125,10 +125,17 @@ class NeuralNetwork:
 
             # print("next_input", next_input)
 
-            # Calculate new output gradient that will be used in the "next" layer
-            weight_slopes, biases_slopes, output_gradient = layer.backward(
-                next_input, output_gradient
-            )
+            # ToDo: need to be tested
+            if layer.get_activator_name() == "softmax":
+                # Calculate new output gradient that will be used in the "next" layer
+                weight_slopes, biases_slopes, output_gradient = layer.backward_softmax(
+                    next_input, output_gradient
+                )
+            else:
+                # Calculate new output gradient that will be used in the "next" layer
+                weight_slopes, biases_slopes, output_gradient = layer.backward(
+                    next_input, output_gradient
+                )
 
             nn_weight_slopes.insert(0, weight_slopes)
 
@@ -139,14 +146,12 @@ class NeuralNetwork:
         return
 
     def back_propagate_batch(self, x_batch: np.ndarray, y_batch: np.ndarray):
-        # print("Starting back propagate for batch")
         predictions = [self.forward(x) for x in x_batch]
 
         all_batch_weight_slopes: list[list[Matrix]] = []
         all_batch_biases_slopes: list[list[Vector]] = []
 
         for index, x in enumerate(x_batch):
-            # print(f"item_index {item_index}")
             true_y = y_batch[index]
             calculated_layers = predictions[index]
             pred_y = calculated_layers[-1]
@@ -161,16 +166,19 @@ class NeuralNetwork:
             nn_biases_slopes: list[Vector] = []
 
             for layer_index in range(len(self.layers) - 1, -1, -1):
-                # print(f"layer_index {layer_index}")
                 layer = self.layers[layer_index]
                 next_input = calculated_layers[layer_index]
 
-                # print(f"output_gradient {output_gradient}")
-
                 # Calculate new output gradient that will be used in the "next" layer
-                layer_weight_slopes, layer_biases_slopes, output_gradient = (
-                    layer.backward(next_input, output_gradient)
-                )
+                if layer.get_activator_name() == "softmax":
+                    layer_weight_slopes, layer_biases_slopes, output_gradient = (
+                        layer.backward_softmax(next_input, output_gradient)
+                    )
+                else:
+                    layer_weight_slopes, layer_biases_slopes, output_gradient = (
+                        layer.backward(next_input, output_gradient)
+                    )
+
                 # Add layer weight slopes to the whole NN weight slopes
                 nn_weight_slopes.insert(0, layer_weight_slopes)
                 nn_biases_slopes.insert(0, layer_biases_slopes)

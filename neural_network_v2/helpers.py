@@ -80,10 +80,21 @@ def activate(input: Vector, activator: Activator) -> Vector:
         return np.where(input > 0, input, 0)
     elif activator == "sigmoid":
         return 1 / (1 + np.exp(-input))
-    if activator == "tanh":
+    elif activator == "tanh":
         return np.tanh(input)
+    if activator == "softmax":
+        exps = np.exp(input)
+        return exps / np.sum(exps)
 
     raise ValueError("Unknown activator function")
+
+
+# Calculate softmax Jacobian dS/da
+def softmax_derivative(input: Vector) -> Matrix:
+    n = len(input)
+    identity = np.eye(n)
+
+    return input[:, np.newaxis] * (identity - input[np.newaxis, :])
 
 
 def derivate(input: Vector, activator: Activator) -> Vector:

@@ -15,7 +15,8 @@ raw_rice_dataset = pd.read_csv(rice_dataset_path)
 # sns.pairplot(data=rice_dataset, hue="Class")
 
 rice_dataset = raw_rice_dataset.copy()
-rice_dataset["Class"] = raw_rice_dataset["Class"].map({"Cammeo": 1, "Osmancik": 0})  # pyright: ignore[reportArgumentType]
+rice_dataset["Class_1"] = raw_rice_dataset["Class"].map({"Cammeo": 1, "Osmancik": 0})  # pyright: ignore[reportArgumentType]
+rice_dataset["Class_2"] = raw_rice_dataset["Class"].map({"Cammeo": 0, "Osmancik": 1})  # pyright: ignore[reportArgumentType]
 
 print(rice_dataset.head())
 
@@ -30,12 +31,13 @@ rice_x_labels = [
     # "Extent",
 ]
 rice_y_labels = [
-    "Class",
+    "Class_1",
+    "Class_2",
 ]
 
 
 train_rice_dataset, validate_rise_dataset, test_rice_dataset = split_dataset(
-    rice_dataset, 0.8, 0.1, 0.1
+    rice_dataset, 0.8, 0.2, 0
 )
 
 threshold = 0.5
@@ -88,7 +90,7 @@ def render_losses(losses: list[float]):
 
 nn = NeuralNetwork(
     [
-        {"input_size": len(rice_x_labels), "output_size": 1, "activation": "sigmoid"},
+        {"input_size": len(rice_x_labels), "output_size": 2, "activation": "softmax"},
     ],
     learning_rate=0.01,
     loss_name="log",
@@ -96,17 +98,15 @@ nn = NeuralNetwork(
 
 
 def train_nn():
-    losses = nn.train(
+    return nn.train(
         x_list=train_x_list,
         y_list=train_y_list,
         epochs=100,
         batch_size=100,
-        stop_on_loss=0.19,
+        # stop_on_loss=0.2,
         # render_every=10,
-        threshold=threshold,
+        # threshold=threshold,
     )
-
-    render_losses(losses)
 
 
 def validate_nn():
@@ -118,9 +118,10 @@ def validate_nn():
     y_list = validate_y_dataset.to_numpy()
 
     loss = nn.calculate_loss(x_list, y_list)
-    acc = nn.calculate_accuracy(x_list, y_list, threshold)
+    # acc = nn.calculate_accuracy(x_list, y_list, threshold)
+    acc = 0
 
-    print(f"Validate loss: {loss} -  acc: {acc}")
+    print(f"Validate loss: {loss:.3f} -  acc: {acc:.3f}")
 
 
 def test_nn():
@@ -132,13 +133,16 @@ def test_nn():
     y_list = test_y_dataset.to_numpy()
 
     loss = nn.calculate_loss(x_list, y_list)
-    acc = nn.calculate_accuracy(x_list, y_list, threshold)
+    # acc = nn.calculate_accuracy(x_list, y_list, threshold)
+    acc = 0
 
-    print(f"Test loss: {loss} -  acc: {acc}")
+    print(f"Test loss: {loss:.3f} -  acc: {acc:.3f}")
 
 
-train_nn()
+losses = train_nn()
 
 validate_nn()
 
-test_nn()
+# test_nn()
+
+render_losses(losses)
