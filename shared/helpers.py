@@ -22,11 +22,11 @@ def split_dataset(
         raise ValueError("Percentages should not be higher than 1")
 
     train_index = round(number_samples * train_percentage)
-    validation_index = train_index + round(number_samples * 0.1)
+    validation_index = train_index + round(number_samples * validation_percentage)
 
-    train_data = dataset.iloc[0:train_index]
-    validation_data = dataset.iloc[train_index:validation_index]
-    test_data = dataset.iloc[validation_index:]
+    train_data: DataFrame = dataset.iloc[0:train_index]
+    validation_data: DataFrame = dataset.iloc[train_index:validation_index]
+    test_data: DataFrame = dataset.iloc[validation_index:]
 
     return (train_data, validation_data, test_data)
 

@@ -23,6 +23,9 @@ from .visual import (
 )
 
 
+np.set_printoptions(precision=3)
+
+
 class NeuralNetwork:
     layers: list[Layer]
     loss_name: Loss
@@ -134,10 +137,12 @@ class NeuralNetwork:
 
         pred_output = calculated_layers[-1]
 
+        # Calculate loss derivate with respect to activation output
         d_loss_d_y = calculate_loss_derivative(pred_output, true_output, self.loss_name)
 
         # print("d_loss_d_y", d_loss_d_y)
 
+        # The loss derivate will be the initial gradient for the back forward
         output_gradient = d_loss_d_y
 
         nn_weight_slopes: list[Matrix] = []
@@ -283,8 +288,6 @@ class NeuralNetwork:
 
             print(" - ".join(metrics))
 
-            # print("new weights", self.layers)
-
             # Update plot
             # render_nn_output_for_two_inputs(
             #     x_batches[0], y_batches[0], lambda x: self.calculate_output(x)
@@ -308,6 +311,8 @@ class NeuralNetwork:
             ).flatten()
         )
         print(y_list[indices].flatten())
+
+        print("Weights", self.layers)
 
         cleanup_plot()
 
