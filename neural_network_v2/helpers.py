@@ -5,22 +5,24 @@ from .types import Activator, LayerConfig, Loss, Matrix, Vector
 rg = np.random.default_rng()
 
 
-def build_layers(layer_configs: list[LayerConfig]) -> list[Matrix]:
+def build_layers(layer_configs: list[LayerConfig]):
     """
     Builds neural network layers with biases
     """
     weights_list: list[Matrix] = []
+    biases_list: list[Vector] = []
 
     # Iterate over all layers
     for layer_config in layer_configs:
-        weights = build_layer(layer_config)
+        weights, biases = build_layer(layer_config)
 
         weights_list.append(weights)
+        biases_list.append(biases)
 
-    return weights_list
+    return weights_list, biases_list
 
 
-def build_layer(layer_config: LayerConfig) -> Matrix:
+def build_layer(layer_config: LayerConfig):
     min_weight = -0.5
     max_weight = 0.5
 
@@ -30,10 +32,7 @@ def build_layer(layer_config: LayerConfig) -> Matrix:
 
     biases = np.zeros((layer_config["output_size"],))
 
-    # Add biases as the last column in the weights matrix
-    weights_and_biases = np.hstack((weights, biases[:, np.newaxis]))
-
-    return weights_and_biases
+    return weights, biases
 
 
 def calculate_loss(
@@ -113,4 +112,22 @@ def calculate_mean_weight_slopes(
             for (index, layer_weight_slopes) in enumerate(nn_weight_slopes)
         ]
 
-    return [nn_weight_slopes / len(batch_weight_slopes) for nn_weight_slopes in sum]
+    return [
+        layer_weight_slopes / len(batch_weight_slopes) for layer_weight_slopes in sum
+    ]
+
+
+def calculate_mean_biases_slopes(
+    batch_biases_slopes: list[list[Vector]],
+):
+    sum: list[Vector] = batch_biases_slopes[0]
+
+    for nn_biases_slopes in batch_biases_slopes[1:]:
+        sum = [
+            sum[index] + layer_biases_slopes
+            for (index, layer_biases_slopes) in enumerate(nn_biases_slopes)
+        ]
+
+    return [
+        layer_biases_slopes / len(batch_biases_slopes) for layer_biases_slopes in sum
+    ]

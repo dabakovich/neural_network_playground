@@ -9,6 +9,7 @@ from .helpers import (
     build_layers,
     calculate_loss,
     calculate_loss_derivative,
+    calculate_mean_biases_slopes,
     calculate_mean_weight_slopes,
 )
 from .layer import Layer
@@ -33,20 +34,22 @@ class NeuralNetwork:
     def __init__(
         self,
         layer_configs: list[LayerConfig],
-        weights_list_parameter: list[Matrix] | None = None,
+        weights_list_parameter: tuple[list[Matrix], list[Vector]] | None = None,
         learning_rate=0.01,
         loss_name: Loss = "mse",
     ):
         self.layer_configs = layer_configs
 
         if weights_list_parameter is None:
-            weights_list = build_layers(layer_configs)
+            weights_list, biases_list = build_layers(layer_configs)
         else:
-            weights_list = weights_list_parameter
+            weights_list, biases_list = weights_list_parameter
 
         layers = []
         for index, layer_config in enumerate[LayerConfig](layer_configs):
-            layer = Layer(layer_config, weights_list[index], learning_rate)
+            layer = Layer(
+                layer_config, (weights_list[index], biases_list[index]), learning_rate
+            )
             layers.append(layer)
         self.layers = layers
 
@@ -71,37 +74,6 @@ class NeuralNetwork:
         pred_items = np.array([self.calculate_output(x) for x in x_list])
 
         loss = calculate_loss(pred_items, y_list, self.loss_name)
-
-        return loss
-
-    def calculate_loss_for_weights(
-        self,
-        x_list: np.ndarray,
-        y_list: np.ndarray,
-        weight_1: tuple[float, tuple[int, int]],
-        weight_2: tuple[float, tuple[int, int]],
-        layer_index: int,
-    ):
-        pred_items = []
-        for x in x_list:
-            next_input: np.ndarray = x.copy()
-            calculated_layers: list[Vector] = [next_input]
-
-            for index, layer in enumerate(self.layers):
-                if index == layer_index:
-                    weights_override = layer.weights.copy()
-                    weights_override[weight_1[1]] = weight_1[0]
-                    weights_override[weight_2[1]] = weight_2[0]
-                    next_input = layer.forward(next_input, weights_override)
-                else:
-                    next_input = layer.forward(next_input)
-
-                calculated_layers.append(next_input)
-
-            pred_items.append(calculated_layers[-1])
-
-        # Calculate loss
-        loss = calculate_loss(np.array(pred_items), y_list, self.loss_name)
 
         return loss
 
@@ -154,11 +126,13 @@ class NeuralNetwork:
             # print("next_input", next_input)
 
             # Calculate new output gradient that will be used in the "next" layer
-            weight_slopes, output_gradient = layer.backward(next_input, output_gradient)
+            weight_slopes, biases_slopes, output_gradient = layer.backward(
+                next_input, output_gradient
+            )
 
             nn_weight_slopes.insert(0, weight_slopes)
 
-            layer.update_weights(weight_slopes)
+            layer.update_weights(weight_slopes, biases_slopes)
 
         # print("nn_weight_slopes", nn_weight_slopes)
         # print("New weights", self.layers)
@@ -169,6 +143,7 @@ class NeuralNetwork:
         predictions = [self.forward(x) for x in x_batch]
 
         all_batch_weight_slopes: list[list[Matrix]] = []
+        all_batch_biases_slopes: list[list[Vector]] = []
 
         for index, x in enumerate(x_batch):
             # print(f"item_index {item_index}")
@@ -183,6 +158,7 @@ class NeuralNetwork:
             output_gradient = d_loss_d_y
 
             nn_weight_slopes: list[Matrix] = []
+            nn_biases_slopes: list[Vector] = []
 
             for layer_index in range(len(self.layers) - 1, -1, -1):
                 # print(f"layer_index {layer_index}")
@@ -192,24 +168,29 @@ class NeuralNetwork:
                 # print(f"output_gradient {output_gradient}")
 
                 # Calculate new output gradient that will be used in the "next" layer
-                layer_weight_slopes, output_gradient = layer.backward(
-                    next_input, output_gradient
+                layer_weight_slopes, layer_biases_slopes, output_gradient = (
+                    layer.backward(next_input, output_gradient)
                 )
                 # Add layer weight slopes to the whole NN weight slopes
                 nn_weight_slopes.insert(0, layer_weight_slopes)
+                nn_biases_slopes.insert(0, layer_biases_slopes)
 
             # Append neural network example weight slopes to the whole batch weight slopes list
             all_batch_weight_slopes.append(nn_weight_slopes)
+            all_batch_biases_slopes.append(nn_biases_slopes)
 
         # print("all_batch_weight_slopes", all_batch_weight_slopes)
         # Calculate mean weight slopes for all examples in the batch
         mean_batch_weight_slopes = calculate_mean_weight_slopes(all_batch_weight_slopes)
+        mean_batch_biases_slopes = calculate_mean_biases_slopes(all_batch_biases_slopes)
 
         # print("mean_batch_weight_slopes", mean_batch_weight_slopes)
 
         # Update whole NN weights using batch mean slopes
-        for index, weight_slopes in enumerate(mean_batch_weight_slopes):
-            self.layers[index].update_weights(weight_slopes)
+        for index in range(len(mean_batch_weight_slopes)):
+            self.layers[index].update_weights(
+                mean_batch_weight_slopes[index], mean_batch_biases_slopes[index]
+            )
 
         # print("new weights", self.layers)
 
@@ -312,8 +293,16 @@ class NeuralNetwork:
         )
         print(y_list[indices].flatten())
 
-        print("Weights", self.layers)
+        print(f"FINAL LAYERS\n{self.__str__()}")
 
         cleanup_plot()
 
         return losses
+
+    def __str__(self):
+        return "\n".join(
+            [
+                f"Layer{index + 1}:\n{layer.__str__()}"
+                for index, layer in enumerate(self.layers)
+            ]
+        )

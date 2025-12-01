@@ -7,23 +7,29 @@ from .types import Activator, LayerConfig, Matrix, Vector
 class Layer:
     layer_config: LayerConfig
     weights: Matrix
+    biases: Vector
     calculated_layer: Vector | None = None
 
     def __init__(
         self,
         layer_config: LayerConfig,
-        weights: Matrix,
+        weights_and_biases: tuple[Matrix, Vector],
         learning_rate: float,
     ):
         self.layer_config = layer_config
-        self.weights = weights
+        self.weights, self.biases = weights_and_biases
         self.learning_rate = learning_rate
 
-    def forward(self, input: Vector, weights_override: Matrix | None = None) -> Vector:
-        if weights_override is not None:
-            signal = weights_override @ np.append(input, 1)
+    def forward(
+        self,
+        input: Vector,
+        weights_and_biases_override: tuple[Matrix, Vector] | None = None,
+    ) -> Vector:
+        if weights_and_biases_override is not None:
+            weights, biases = weights_and_biases_override
+            signal = weights @ input + biases
         else:
-            signal = self.weights @ np.append(input, 1)
+            signal = self.weights @ input + self.biases
 
         activated_signal = activate(signal, self.get_activator_name())
 
@@ -47,29 +53,27 @@ class Layer:
         # Multiplying gradient by activation function derivate
         gradient *= dy_dn
 
-        # Remove last biases vector in the transposed_weights matrix, since biases doesn't depend on layer input
-        weights_without_biases = self.weights[:, :-1]
-
         # Calculate gradient for "next" layer
-        next_gradient = gradient @ weights_without_biases
+        next_gradient = gradient @ self.weights
 
-        # CALCULATE WEIGHT SLOPES AND UPDATE WEIGHTS
+        # CALCULATE WEIGHT, BIASES SLOPES
 
-        # Add `1` for bias calculations and make vector as "horizontal" matrix
-        input_matrix_with_bias = np.append(input, 1)[np.newaxis, :]
+        weight_slopes = gradient[:, np.newaxis] @ input[np.newaxis, :]
+        biases_slopes = gradient.copy()
 
-        weight_slopes = gradient[:, np.newaxis] @ input_matrix_with_bias
+        return weight_slopes, biases_slopes, next_gradient
 
-        return weight_slopes, next_gradient
-
-    def update_weights(self, weight_slopes: Matrix):
+    def update_weights(self, weight_slopes: Matrix, biases_slopes: Vector):
         self.weights = self.weights - (weight_slopes * self.learning_rate)
+        self.biases = self.biases - (biases_slopes * self.learning_rate)
 
     def get_activator_name(self) -> Activator:
         return self.layer_config.get("activation", "linear")
 
     def __str__(self):
-        return self.weights.__str__()
+        return f"Weights:\n{self.weights.__str__()}\nBiases:\n{self.biases.__str__()}\n"
 
     def __repr__(self):
-        return self.weights.__repr__()
+        return (
+            f"Weights:\n{self.weights.__repr__()}\nBiases:\n{self.biases.__repr__()}\n"
+        )
