@@ -125,17 +125,10 @@ class NeuralNetwork:
 
             # print("next_input", next_input)
 
-            # ToDo: need to be tested
-            if layer.get_activator_name() == "softmax":
-                # Calculate new output gradient that will be used in the "next" layer
-                weight_slopes, biases_slopes, output_gradient = layer.backward_softmax(
-                    next_input, output_gradient
-                )
-            else:
-                # Calculate new output gradient that will be used in the "next" layer
-                weight_slopes, biases_slopes, output_gradient = layer.backward(
-                    next_input, output_gradient
-                )
+            # Calculate new output gradient that will be used in the "next" layer
+            weight_slopes, biases_slopes, output_gradient = layer.backward(
+                next_input, output_gradient
+            )
 
             nn_weight_slopes.insert(0, weight_slopes)
 
@@ -170,14 +163,9 @@ class NeuralNetwork:
                 next_input = calculated_layers[layer_index]
 
                 # Calculate new output gradient that will be used in the "next" layer
-                if layer.get_activator_name() == "softmax":
-                    layer_weight_slopes, layer_biases_slopes, output_gradient = (
-                        layer.backward_softmax(next_input, output_gradient)
-                    )
-                else:
-                    layer_weight_slopes, layer_biases_slopes, output_gradient = (
-                        layer.backward(next_input, output_gradient)
-                    )
+                layer_weight_slopes, layer_biases_slopes, output_gradient = (
+                    layer.backward(next_input, output_gradient)
+                )
 
                 # Add layer weight slopes to the whole NN weight slopes
                 nn_weight_slopes.insert(0, layer_weight_slopes)

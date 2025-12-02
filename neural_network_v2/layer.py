@@ -38,6 +38,15 @@ class Layer:
         return activated_signal
 
     def backward(self, input: Vector, gradient: Vector):
+        if self.calculated_layer is None:
+            raise ValueError("Layer was not calculated, call `forward` first")
+
+        if self.get_activator_name() == "softmax":
+            return self.backward_softmax(input, gradient)
+
+        return self.backward_linear(input, gradient)
+
+    def backward_linear(self, input: Vector, gradient: Vector):
         """
         Process backward gradient signal.
 
@@ -48,29 +57,29 @@ class Layer:
         if self.calculated_layer is None:
             raise ValueError("Layer was not calculated, call `forward` first")
 
+        # Calculate derivative of activated signal in respect to layer output
         dy_dn = derivate(self.calculated_layer, self.get_activator_name())
 
         # Multiplying gradient by activation function derivate
-        gradient *= dy_dn
-
-        # Calculate gradient for "next" layer
-        next_gradient = gradient @ self.weights
+        d_loss_d_n = gradient * dy_dn
 
         # CALCULATE WEIGHT, BIASES SLOPES
+        d_loss_d_w = d_loss_d_n[:, np.newaxis] @ input[np.newaxis, :]
+        d_loss_d_b = d_loss_d_n.copy()
 
-        weight_slopes = gradient[:, np.newaxis] @ input[np.newaxis, :]
-        biases_slopes = gradient.copy()
+        # CALCULATE GRADIENT FOR "NEXT" LAYER
+        next_gradient = d_loss_d_n @ self.weights
 
-        return weight_slopes, biases_slopes, next_gradient
+        return d_loss_d_w, d_loss_d_b, next_gradient
 
     def backward_softmax(self, input: Vector, gradient: Vector):
         if self.calculated_layer is None:
             raise ValueError("Layer was not calculated, call `forward` first")
 
-        # Jacobian
-        d_S_d_n = softmax_derivative(self.calculated_layer)
+        # Calculate Jacobian matrix (derivative of activated signal in respect to layer output)
+        dy_dn = softmax_derivative(self.calculated_layer)
 
-        d_loss_d_n = gradient[:, np.newaxis] * d_S_d_n
+        d_loss_d_n = gradient[:, np.newaxis] * dy_dn
 
         # Duplicate input to make one input row for each output neuron
         # Number of columns – is count of input neurons
@@ -79,16 +88,15 @@ class Layer:
         new_rows = np.tile(input_matrix[0], (len(gradient) - 1, 1))
         input_matrix = np.vstack((input_matrix, new_rows))
 
-        # d_loss_d_w
-        weight_slopes = d_loss_d_n.T @ input_matrix
-        # d_loss_d_b
-        biases_slopes = (d_loss_d_n.T @ np.ones((len(gradient), 1))).T[0]
+        # CALCULATE WEIGHT, BIASES SLOPES
+        d_loss_d_w = d_loss_d_n.T @ input_matrix
+        d_loss_d_b = (d_loss_d_n.T @ np.ones((len(gradient), 1))).T[0]
 
         next_gradient_matrix = d_loss_d_n @ self.weights
 
         next_gradient = np.sum(next_gradient_matrix, axis=0)
 
-        return weight_slopes, biases_slopes, next_gradient
+        return d_loss_d_w, d_loss_d_b, next_gradient
 
     def update_weights(self, weight_slopes: Matrix, biases_slopes: Vector):
         self.weights = self.weights - (weight_slopes * self.learning_rate)

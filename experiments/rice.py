@@ -90,7 +90,7 @@ def render_losses(losses: list[float]):
 
 nn = NeuralNetwork(
     [
-        {"input_size": len(rice_x_labels), "output_size": 2, "activation": "softmax"},
+        {"input_size": len(rice_x_labels), "output_size": 2, "activation": "sigmoid"},
     ],
     learning_rate=0.01,
     loss_name="log",
