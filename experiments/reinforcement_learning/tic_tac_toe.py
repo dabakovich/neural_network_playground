@@ -69,7 +69,7 @@ def run_game():
 
             x_turn = not x_turn
         except SpotTakenError as e:
-            print(f"Wrong spot {e.index + 1 if e.index else ''}, try again")
+            print(f"Wrong spot {e.index + 1 if e.index is not None else ''}, try again")
         except GameOverError as e:
             if e.winner is None:
                 print("Game over, it's tie")
