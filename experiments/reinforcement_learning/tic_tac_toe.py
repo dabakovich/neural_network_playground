@@ -53,25 +53,28 @@ nn_2 = NeuralNetwork(
     loss_name="log",
 )
 
-game = Game()
-
 
 def run_game():
+    game = Game()
     x_turn = True
+    print(game)
 
     while True:
         try:
-            print(game)
             next_input = (
-                get_int_input(f"Enter index for `{'x' if x_turn else 'o'}`:") - 1
+                get_int_input(f"Enter index for `{'x' if x_turn else 'o'}`: ") - 1
             )
             game.next_move(next_input, 1 if x_turn else -1)
+            print(game)
 
             x_turn = not x_turn
         except SpotTakenError as e:
             print(f"Wrong spot {e.index + 1 if e.index else ''}, try again")
         except GameOverError as e:
-            print(f"Game over, winner is {'x' if e.winner == 1 else 'o'}")
+            if e.winner is None:
+                print("Game over, it's tie")
+            else:
+                print(f"Game over, winner is {'x' if e.winner == 1 else 'o'}")
             return
 
 
