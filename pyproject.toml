@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["neural_network_v2", "shared"]
+packages = ["experiments","neural_network_v2", "shared"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

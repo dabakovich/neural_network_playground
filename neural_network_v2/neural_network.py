@@ -282,12 +282,12 @@ class NeuralNetwork:
         np.random.shuffle(randomize)
         indices = randomize[0:4]
 
-        print(
-            np.array(
-                [(self.calculate_output(item)) for item in x_list[indices]]
-            ).flatten()
-        )
-        print(y_list[indices].flatten())
+        # print(
+        #     np.array(
+        #         [(self.calculate_output(item)) for item in x_list[indices]]
+        #     ).flatten()
+        # )
+        # print(y_list[indices].flatten())
 
         print(f"FINAL LAYERS\n{self.__str__()}")
 
