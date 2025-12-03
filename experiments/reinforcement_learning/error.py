@@ -1,4 +1,3 @@
-# ToDo add TicTacToeError
 from typing import Literal
 
 

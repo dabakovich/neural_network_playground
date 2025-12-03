@@ -10,6 +10,19 @@ from experiments.reinforcement_learning.game_helpers import (
 )
 
 
+str_mapper = np.vectorize(lambda x: "x" if x == 1 else "o" if x == -1 else " ")
+invert_mapper = np.vectorize(lambda x: -x)
+
+
+def invert_mapping(x):
+    if x == 1:
+        return -1
+    elif x == 1:
+        return -1
+
+    return x
+
+
 class Game:
     board: np.ndarray
 
@@ -19,6 +32,10 @@ class Game:
     @property
     def board_2d(self):
         return self.board.reshape((3, -1))
+
+    @property
+    def inverted_board(self):
+        return invert_mapper(self.board)
 
     def next_move(self, index: int, value: Literal[1, -1]):
         """
@@ -51,4 +68,4 @@ class Game:
             raise GameOverError()
 
     def __str__(self):
-        return "\n".join([row.__str__() for row in self.board_2d])
+        return "\n".join([row.__str__() for row in str_mapper(self.board_2d)])

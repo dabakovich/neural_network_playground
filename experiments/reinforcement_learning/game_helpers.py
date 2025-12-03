@@ -64,3 +64,7 @@ def get_int_input(prompt_message="Please enter a number from 1 to 9: "):
             return number  # Return the number if conversion is successful
         except ValueError:
             print("Invalid input. Please enter a valid number.")
+
+
+def user_pause():
+    input("Pause...")

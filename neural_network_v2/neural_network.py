@@ -289,7 +289,7 @@ class NeuralNetwork:
         # )
         # print(y_list[indices].flatten())
 
-        print(f"FINAL LAYERS\n{self.__str__()}")
+        # print(f"FINAL LAYERS\n{self.__str__()}")
 
         cleanup_plot()
 
