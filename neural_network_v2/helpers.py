@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 
 from shared.random import rng
@@ -83,6 +84,7 @@ def activate(input: Vector, activator: Activator) -> Vector:
     elif activator == "tanh":
         return np.tanh(input)
     if activator == "softmax":
+        logging.debug(f"[softmax] input:\n{input}")
         exps = np.exp(input)
         return exps / np.sum(exps)
 

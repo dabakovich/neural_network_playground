@@ -40,6 +40,9 @@ class Game:
 
         self.check_end_game()
 
+    def can_make_move(self, index: int):
+        return self.board[index] == 0
+
     def check_end_game(self):
         """
         Returns tuple[bool, int]

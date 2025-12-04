@@ -25,7 +25,7 @@ from .visual import (
 )
 
 
-np.set_printoptions(precision=3)
+np.set_printoptions(precision=4)
 
 
 class NeuralNetwork:
@@ -72,7 +72,7 @@ class NeuralNetwork:
         return self.forward(input)[-1]
 
     def calculate_loss(self, x_list: np.ndarray, y_list: np.ndarray) -> float:
-        pred_items = np.array([self.calculate_output(x) for x in x_list])
+        pred_items = np.apply_along_axis(self.calculate_output, 1, x_list)
 
         loss = calculate_loss(pred_items, y_list, self.loss_name)
 
