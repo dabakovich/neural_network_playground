@@ -14,15 +14,6 @@ str_mapper = np.vectorize(lambda x: "x" if x == 1 else "o" if x == -1 else " ")
 invert_mapper = np.vectorize(lambda x: -x)
 
 
-def invert_mapping(x):
-    if x == 1:
-        return -1
-    elif x == 1:
-        return -1
-
-    return x
-
-
 class Game:
     board: np.ndarray
 

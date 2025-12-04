@@ -3,6 +3,7 @@ import numpy as np
 from experiments.reinforcement_learning.constants import EPOCHS_PER_LEARNING
 from experiments.reinforcement_learning.history import History
 from neural_network_v2.neural_network import NeuralNetwork
+from shared.random import rng
 
 
 class TicTacToeAgent:
@@ -26,7 +27,7 @@ class TicTacToeAgent:
 
         indices = np.arange(9)
 
-        selected: int = np.random.choice(indices, p=output)
+        selected: int = rng.choice(indices, p=output)
 
         return selected
 

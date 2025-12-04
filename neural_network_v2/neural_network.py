@@ -4,6 +4,7 @@ import time
 import numpy as np
 
 from shared.helpers import get_random
+from shared.random import rng
 
 from .helpers import (
     build_layers,
@@ -229,7 +230,7 @@ class NeuralNetwork:
                 split_indices = np.arange(1, len(x_list), batch_size)
 
                 # Shuffle the data for each epoch to introduce stochasticity and split into batches
-                np.random.shuffle(randomize)
+                rng.shuffle(randomize)
 
                 x_batches = np.array_split(x_list[randomize], split_indices)
                 y_batches = np.array_split(y_list[randomize], split_indices)
@@ -279,7 +280,7 @@ class NeuralNetwork:
 
         # Print sample NN outputs
         randomize = np.arange(len(x_list))
-        np.random.shuffle(randomize)
+        rng.shuffle(randomize)
         indices = randomize[0:4]
 
         # print(

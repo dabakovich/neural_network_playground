@@ -1,5 +1,6 @@
-import numpy as np
 from pandas import DataFrame
+
+from .random import rng
 
 from .matrix import Matrix
 from .types import InputVector
@@ -7,7 +8,7 @@ from .vector import Vector
 
 
 def get_random(min_value=0, max_value=1):
-    return np.random.random() * (max_value - min_value) + min_value
+    return rng.random() * (max_value - min_value) + min_value
 
 
 def split_dataset(

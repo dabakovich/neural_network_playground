@@ -64,7 +64,7 @@ def run_game(agents: list[TicTacToeAgent]):
         try:
             # board = game.board if x_turn else game.inverted_board
 
-            print(f"board: {board}, {'x' if x_turn else 'o'} turn")
+            # print(f"board: {board}, {'x' if x_turn else 'o'} turn")
 
             # X TURN
             spot_index = agent.select_spot_index(board)
@@ -130,7 +130,7 @@ def run_games():
 
         agents.reverse()
 
-        if i != 0 and i % 100 == 0:
+        if i != 0 and i % 500 == 0:
             unique_elements, counts = np.unique(games, return_counts=True)
             element_counts = dict(zip(unique_elements.tolist(), counts.tolist()))
 

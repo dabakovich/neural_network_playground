@@ -1,8 +1,8 @@
 import numpy as np
 
-from .types import Activator, LayerConfig, Loss, Matrix, Vector
+from shared.random import rng
 
-rg = np.random.default_rng()
+from .types import Activator, LayerConfig, Loss, Matrix, Vector
 
 
 def build_layers(layer_configs: list[LayerConfig]):
@@ -26,7 +26,7 @@ def build_layer(layer_config: LayerConfig):
     min_weight = -0.5
     max_weight = 0.5
 
-    weights = (max_weight - min_weight) * rg.random(
+    weights = (max_weight - min_weight) * rng.random(
         (layer_config["output_size"], layer_config["input_size"])
     ) + min_weight
 
