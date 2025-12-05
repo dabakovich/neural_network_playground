@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from experiments.reinforcement_learning.agent import TicTacToeAgent
-from experiments.reinforcement_learning.constants import GameResult
+from experiments.reinforcement_learning.constants import AgentName
 from experiments.reinforcement_learning.game_helpers import user_pause
 from experiments.reinforcement_learning.game_runner import run_game
 from experiments.reinforcement_learning.statistics import Statistics
@@ -23,8 +23,9 @@ def render_losses(losses: list[float]):
 
 nn_1 = NeuralNetwork(
     [
-        {"input_size": 9, "output_size": 9, "activation": "tanh"},
-        {"input_size": 9, "output_size": 9, "activation": "softmax"},
+        {"input_size": 9, "output_size": 18, "activation": "tanh"},
+        {"input_size": 18, "output_size": 18, "activation": "tanh"},
+        {"input_size": 18, "output_size": 9, "activation": "softmax"},
     ],
     learning_rate=0.0001,
     loss_name="log",
@@ -36,7 +37,7 @@ nn_2 = NeuralNetwork(
         {"input_size": 18, "output_size": 18, "activation": "tanh"},
         {"input_size": 18, "output_size": 9, "activation": "softmax"},
     ],
-    learning_rate=0.001,
+    learning_rate=0.0001,
     loss_name="log",
 )
 
@@ -45,8 +46,8 @@ NUMBER_OF_GAMES = 50000
 
 def run_games(render_every=1000):
     statistics = Statistics()
-    agent_1 = TicTacToeAgent(GameResult.AGENT_1, nn_1)
-    agent_2 = TicTacToeAgent(GameResult.AGENT_2, nn_2)
+    agent_1 = TicTacToeAgent(AgentName.AGENT_1, nn_1)
+    agent_2 = TicTacToeAgent(AgentName.AGENT_2, nn_2)
     agents = [agent_1, agent_2]
 
     print("Initial agents")
@@ -84,8 +85,9 @@ def run_games(render_every=1000):
             element_counts = dict(zip(unique_elements.tolist(), counts.tolist()))
 
             print(element_counts)
+            print(f"[global] element_counts: {element_counts}")
             print(
-                f"[global] element_counts: {element_counts}, wrong spots: {statistics.wrong_spots_count_list.sum()}"
+                f"[global] wrong spots: agent 1 - {statistics.agent_1_wrong_spots_count.sum()}; agent 2 - {statistics.agent_2_wrong_spots_count.sum()}"
             )
 
             last_unique_elements, last_counts = np.unique(
@@ -95,10 +97,11 @@ def run_games(render_every=1000):
                 zip(last_unique_elements.tolist(), last_counts.tolist())
             )
 
+            print(f"[last {render_every}] element_counts: {last_element_counts}")
             print(
-                f"[last {render_every}] element_counts: {last_element_counts}, wrong spots: {statistics.wrong_spots_count_list[-render_every:].sum()}"
+                f"[last {render_every}] wrong spots: agent 1 -  {statistics.agent_1_wrong_spots_count[-render_every:].sum()}; agent 2 - {statistics.agent_2_wrong_spots_count[-render_every:].sum()}"
             )
             user_pause()
 
 
-run_games()
+run_games(1000)

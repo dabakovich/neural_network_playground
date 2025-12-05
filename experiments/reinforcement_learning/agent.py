@@ -5,7 +5,6 @@ from experiments.reinforcement_learning.constants import (
     BATCH_SIZE,
     EPOCHS_PER_LEARNING,
     RL_ONE_MOVE_EPOCHS_PER_LEARNING,
-    RL_ONE_MOVE_REWARD_SHIFT,
     TOP_K,
 )
 from experiments.reinforcement_learning.history import History
@@ -80,7 +79,7 @@ class TicTacToeAgent:
         self,
         x: Vector,
         y_index: int,
-        reward_shift=RL_ONE_MOVE_REWARD_SHIFT,
+        reward_shift: float,
         epochs=RL_ONE_MOVE_EPOCHS_PER_LEARNING,
     ):
         model_output = self.nn.calculate_output(x)

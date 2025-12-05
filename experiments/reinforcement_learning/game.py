@@ -57,15 +57,6 @@ class Game:
         return self.board[index] == BoardValue.EMPTY
 
     def check_end_game(self):
-        """
-        Returns tuple[bool, int]
-
-        bool is status of the game (True if game ended, False if not)
-        int shows who's won, or tie
-        `1` - "X" won
-        `-1` - "O" won
-        `0` - tie
-        """
         winner = check_win(self.board_2d)
 
         if winner is not None:

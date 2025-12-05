@@ -3,6 +3,8 @@ import logging
 from experiments.reinforcement_learning.agent import TicTacToeAgent
 from experiments.reinforcement_learning.constants import (
     IS_END_GAME_ON_WRONG_SPOT,
+    RL_ONE_MOVE_WRONG_SPOT_REWARD_SHIFT,
+    AgentName,
     BoardStringValue,
     BoardValue,
     BoardValueMap,
@@ -16,7 +18,8 @@ from experiments.reinforcement_learning.statistics import Statistics
 
 
 def run_game(agents: list[TicTacToeAgent], statistics: Statistics):
-    wrong_spots_count = 0
+    agent_1_wrong_spots_count = 0
+    agent_2_wrong_spots_count = 0
     game = Game()
     x_turn = True
     logging.debug(f"[run_game] Initial board:\n{game}")
@@ -33,17 +36,23 @@ def run_game(agents: list[TicTacToeAgent], statistics: Statistics):
                 f"[run_game] {agent.name} selected '{BoardStringValue.X if x_turn else BoardStringValue.O}' for {spot_index + 1}"
             )
 
-            user_pause()
+            # user_pause()
 
             if not game.can_make_move(spot_index):
-                wrong_spots_count += 1
+                if agent.name == AgentName.AGENT_1:
+                    agent_1_wrong_spots_count += 1
+                else:
+                    agent_2_wrong_spots_count += 1
+
                 if IS_END_GAME_ON_WRONG_SPOT:
                     # Add last step before exception
                     agent.history.add_step(board, spot_index)
 
                     raise SpotTakenError(index=spot_index)
                 else:
-                    agent.reinforce_learn_one_move(board, spot_index)
+                    agent.reinforce_learn_one_move(
+                        board, spot_index, RL_ONE_MOVE_WRONG_SPOT_REWARD_SHIFT
+                    )
                     logging.debug(f"[run_game] Board after RL one move:\n{game}")
                     continue
 
@@ -58,10 +67,14 @@ def run_game(agents: list[TicTacToeAgent], statistics: Statistics):
             print("Ending game...")
 
             agent.history.finish_game(Reward.WRONG_SPOT, True)
-            opponent.history.finish_game(Reward.TIE)
+            opponent.history.finish_game(Reward.NOTHING)
 
             # Append wrong spot game result if we're not allowing retries
-            statistics.append_game_result(GameResult.WRONG_SPOT)
+            statistics.append_game_result(
+                GameResult.AGENT_1_WRONG_SPOT
+                if agent.name == AgentName.AGENT_1
+                else GameResult.AGENT_2_WRONG_SPOT
+            )
 
             return
 
@@ -76,18 +89,16 @@ def run_game(agents: list[TicTacToeAgent], statistics: Statistics):
                 logging.info(f"Game over, winner is {BoardValueMap[e.winner]}")
                 logging.debug(f"[run_game] Board after end game:\n{game}")
 
-                is_agent_winner = e.winner == move
-                agent.history.finish_game(
-                    Reward.WIN if is_agent_winner else Reward.LOSE
-                )
-                opponent.history.finish_game(
-                    Reward.WIN if not is_agent_winner else Reward.LOSE
-                )
+                agent.history.finish_game(Reward.WIN)
+                opponent.history.finish_game(Reward.LOSE)
 
                 statistics.append_game_result(
-                    agent.name if is_agent_winner else opponent.name
+                    GameResult.AGENT_1_WIN
+                    if agent.name == AgentName.AGENT_1
+                    else GameResult.AGENT_2_WIN
                 )
 
             # Append wrong spots count per game, if we're allowing retries
-            statistics.append_wrong_spots_count(wrong_spots_count)
+            statistics.append_agent_1_wrong_spots_count(agent_1_wrong_spots_count)
+            statistics.append_agent_2_wrong_spots_count(agent_2_wrong_spots_count)
             return

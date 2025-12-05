@@ -16,7 +16,7 @@ class History:
 
     # 2d matrix, with zeros and rewards on the relevant indices
     reward_shifts_list: np.ndarray
-    reward: int | None
+    reward: float | None
 
     def __init__(self) -> None:
         self.x_steps_list = []
@@ -26,7 +26,7 @@ class History:
         self.x_steps_list.append(board.copy())
         self.indices.append(selected_spot_index)
 
-    def finish_game(self, reward: int, is_wrong_spot=False):
+    def finish_game(self, reward: float, is_wrong_spot=False):
         self.reward = reward
 
         self.x_list = np.array(self.x_steps_list)
