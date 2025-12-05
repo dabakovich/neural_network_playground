@@ -1,12 +1,15 @@
-from typing import Literal
 import numpy as np
+
+from experiments.reinforcement_learning.constants import BoardValue
 
 
 def init_board():
-    return np.zeros(9)
+    board = np.empty(9)
+    board.fill(BoardValue.EMPTY)
+    return board
 
 
-def check_win(board: np.ndarray) -> Literal[1, -1] | None:
+def check_win(board: np.ndarray) -> BoardValue | None:
     """
     Checks if the specified player has won the Tic-Tac-Toe game.
 
@@ -18,35 +21,35 @@ def check_win(board: np.ndarray) -> Literal[1, -1] | None:
     """
     # Check rows
     for row in board:
-        if np.all(row == 1):
-            return 1
-        if np.all(row == -1):
-            return -1
+        if np.all(row == BoardValue.X):
+            return BoardValue.X
+        if np.all(row == BoardValue.O):
+            return BoardValue.O
 
     # Check columns
     for col_idx in range(3):
-        if np.all(board[:, col_idx] == 1):
-            return 1
-        if np.all(board[:, col_idx] == -1):
-            return -1
+        if np.all(board[:, col_idx] == BoardValue.X):
+            return BoardValue.X
+        if np.all(board[:, col_idx] == BoardValue.O):
+            return BoardValue.O
 
     # Check main diagonal
-    if np.all(np.diag(board) == 1):
-        return 1
-    if np.all(np.diag(board) == -1):
-        return -1
+    if np.all(np.diag(board) == BoardValue.X):
+        return BoardValue.X
+    if np.all(np.diag(board) == BoardValue.O):
+        return BoardValue.O
 
     # Check anti-diagonal
-    if np.all(np.diag(np.fliplr(board)) == 1):
-        return 1
-    if np.all(np.diag(np.fliplr(board)) == -1):
-        return -1
+    if np.all(np.diag(np.fliplr(board)) == BoardValue.X):
+        return BoardValue.X
+    if np.all(np.diag(np.fliplr(board)) == BoardValue.O):
+        return BoardValue.O
 
     return None
 
 
 def check_tie(board):
-    return np.all(board != 0)
+    return np.all(board != BoardValue.EMPTY)
 
 
 def get_int_input(prompt_message="Please enter a number from 1 to 9: "):

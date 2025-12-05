@@ -1,7 +1,9 @@
-from typing import Literal
-
 import numpy as np
 
+from experiments.reinforcement_learning.constants import (
+    BoardStringValue,
+    BoardValue,
+)
 from experiments.reinforcement_learning.error import GameOverError, SpotTakenError
 from experiments.reinforcement_learning.game_helpers import (
     check_tie,
@@ -9,9 +11,20 @@ from experiments.reinforcement_learning.game_helpers import (
     init_board,
 )
 
-
-str_mapper = np.vectorize(lambda x: "x" if x == 1 else "o" if x == -1 else " ")
-invert_mapper = np.vectorize(lambda x: -x)
+str_mapper = np.vectorize(
+    lambda x: BoardStringValue.X
+    if x == BoardValue.X
+    else BoardStringValue.O
+    if x == BoardValue.O
+    else BoardStringValue.EMPTY
+)
+invert_mapper = np.vectorize(
+    lambda x: BoardValue.X
+    if x == BoardValue.O
+    else BoardValue.O
+    if x == BoardValue.X
+    else x
+)
 
 
 class Game:
@@ -28,12 +41,12 @@ class Game:
     def inverted_board(self):
         return invert_mapper(self.board)
 
-    def next_move(self, index: int, value: Literal[1, -1]):
+    def next_move(self, index: int, value: BoardValue):
         """
         index - cell index
-        value - `1` for "X", `-1` for "O"
+        value - BoardValue int enum
         """
-        if self.board[index] != 0:
+        if self.board[index] != BoardValue.EMPTY:
             raise SpotTakenError(index=index)
 
         self.board[index] = value
@@ -41,7 +54,7 @@ class Game:
         self.check_end_game()
 
     def can_make_move(self, index: int):
-        return self.board[index] == 0
+        return self.board[index] == BoardValue.EMPTY
 
     def check_end_game(self):
         """

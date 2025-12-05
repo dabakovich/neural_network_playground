@@ -1,4 +1,4 @@
-from typing import Literal
+from experiments.reinforcement_learning.constants import BoardValue
 
 
 class TicTacToeError(Exception):
@@ -19,7 +19,7 @@ class GameOverError(TicTacToeError):
     """Raised when an action is attempted after the game has ended."""
 
     def __init__(
-        self, message="The game is already over.", winner: Literal[1, -1] | None = None
+        self, message="The game is already over.", winner: BoardValue | None = None
     ):
         super().__init__(message)
         self.winner = winner

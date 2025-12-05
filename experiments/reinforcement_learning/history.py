@@ -2,8 +2,8 @@ import logging
 import numpy as np
 
 from experiments.reinforcement_learning.constants import (
-    REWARDS_LIST,
-    WRONG_SPOT_REWARD_LIST,
+    REWARD_SHIFTS_LIST,
+    WRONG_SPOT_REWARD_SHIFTS_LIST,
 )
 
 
@@ -32,7 +32,7 @@ class History:
         self.x_list = np.array(self.x_steps_list)
 
         reward_gradient = (
-            WRONG_SPOT_REWARD_LIST if is_wrong_spot else REWARDS_LIST
+            WRONG_SPOT_REWARD_SHIFTS_LIST if is_wrong_spot else REWARD_SHIFTS_LIST
         ) * reward
 
         reward_gradient = reward_gradient[-len(self.indices) :]
