@@ -25,7 +25,9 @@ BoardValueMap = {
 
 class Reward(float, Enum):
     NOTHING = 0
-    WRONG_SPOT = -1
+
+    # For enums we need to have unique values
+    WRONG_SPOT = -0.9
     TIE = 0.1
     WIN = 1
     LOSE = -1
@@ -41,7 +43,7 @@ RL_ONE_MOVE_EPOCHS_PER_LEARNING = 1
 RL_ONE_MOVE_WRONG_SPOT_REWARD_SHIFT = -0.5
 
 # It's a whole tic tac toe dataset in one batch (maximum 5 moves could be done)
-BATCH_SIZE = 10
+BATCH_SIZE = 3
 
 # Reward list, graduated by number of move. Last moves are the most serious ones, especially at the beginning
 # REWARD_SHIFTS_LIST = np.array([1, 0.5, 0.3, 0.25, 0.2])
@@ -67,8 +69,5 @@ class GameResult(StrEnum):
     AGENT_1_WRONG_SPOT = "agent_1_wrong_spot"
     AGENT_2_WRONG_SPOT = "agent_2_wrong_spot"
 
-    # Agent 1 win
     AGENT_1_WIN = "agent_1_win"
-
-    # Agent 2 win
     AGENT_2_WIN = "agent_2_win"
