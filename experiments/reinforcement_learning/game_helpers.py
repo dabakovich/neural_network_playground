@@ -52,17 +52,35 @@ def check_tie(board):
     return np.all(board != BoardValue.EMPTY)
 
 
-def get_int_input(prompt_message="Please enter a number from 1 to 9: "):
+def get_int_input(
+    prompt_message: str,
+    min_value: int | None = None,
+    max_value: int | None = None,
+    default_value: int | None = None,
+):
     """
     Waits for the user to input a valid number and returns it.
     Keeps prompting until a valid number is entered.
     """
     while True:
-        user_input = input(prompt_message)
+        user_input = input(
+            f"{prompt_message}{f' ({default_value})' if default_value else ''}: "
+        )
         try:
+            if not user_input and default_value:
+                return default_value
+
             number = int(user_input)  # Attempt to convert input to a int
-            if number < 1 or number > 9:
-                raise ValueError("Number should be between 1 and 9")
+
+            if min_value:
+                if number < min_value:
+                    raise ValueError(
+                        f"Number should be higher than or equal {min_value}"
+                    )
+
+            if max_value:
+                if number > max_value:
+                    raise ValueError(f"Number should be less than or equal {max_value}")
 
             return number  # Return the number if conversion is successful
         except ValueError:
