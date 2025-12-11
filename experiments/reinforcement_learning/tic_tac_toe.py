@@ -5,9 +5,10 @@ import numpy as np
 
 from experiments.reinforcement_learning.agent import TicTacToeAgent
 from experiments.reinforcement_learning.constants import AgentName
-from experiments.reinforcement_learning.game_helpers import user_pause
+from experiments.reinforcement_learning.game_helpers import get_int_input, user_pause
 from experiments.reinforcement_learning.game_runner import run_game
 from experiments.reinforcement_learning.statistics import Statistics
+from experiments.reinforcement_learning.visual import init_plt, render_statistics
 from neural_network_v2.neural_network import NeuralNetwork
 
 logging.basicConfig(level=logging.DEBUG)
@@ -20,6 +21,16 @@ def render_losses(losses: list[float]):
     plt.title("Learning history")
     plt.show()
 
+
+# + Higher LR
+# + Try batch size 1!!!
+# + Add count of game
+# + !!! Implement safe softmax. It turned on that each time I was getting NaN error, the model actually was starting becoming smarter
+# We need to reward more quick game end
+# + Skip count of games
+# Show statistics in percentage
+# + Render statistics in graph
+# Test top 1 with higher LR
 
 nn_1 = NeuralNetwork(
     [
@@ -41,10 +52,14 @@ nn_2 = NeuralNetwork(
     loss_name="log",
 )
 
-NUMBER_OF_GAMES = 50000
+NUMBER_OF_GAMES = 100000
+DEFAULT_GAMES_TO_SKIP = 1000
+STATISTICS_BATCH_SIZE = 1000
 
 
-def run_games(render_every=1000):
+def run_games():
+    init_plt()
+    games_to_skip = DEFAULT_GAMES_TO_SKIP
     statistics = Statistics()
     agent_1 = TicTacToeAgent(AgentName.AGENT_1, nn_1)
     agent_2 = TicTacToeAgent(AgentName.AGENT_2, nn_2)
@@ -55,12 +70,20 @@ def run_games(render_every=1000):
     print(agent_1.nn)
     print("agent_2")
     print(agent_2.nn)
-    user_pause()
+
+    games_to_skip = get_int_input(
+        "Enter count of games to skip",
+        max_value=NUMBER_OF_GAMES,
+        default_value=DEFAULT_GAMES_TO_SKIP,
+    )
 
     for i in range(NUMBER_OF_GAMES):
         print(f"{'-' * 50}GAME {i + 1}{'-' * 50}")
         print(agent_1.history)
         print(agent_2.history)
+
+        if i != 0 and i % 1000 == 0:
+            render_statistics(statistics, 100, 5000)
 
         run_game(agents, statistics)
 
@@ -75,7 +98,10 @@ def run_games(render_every=1000):
 
         # user_pause()
 
-        if i != 0 and i % render_every == 0:
+        games_to_skip -= 1
+
+        if games_to_skip == 0 or i == NUMBER_OF_GAMES:
+            print(f"Game {i + 1} results")
             print("agent_1")
             # print(agent_1.nn)
             print("agent_2")
@@ -91,17 +117,24 @@ def run_games(render_every=1000):
             )
 
             last_unique_elements, last_counts = np.unique(
-                statistics.games[-render_every:], return_counts=True
+                statistics.games[-STATISTICS_BATCH_SIZE:], return_counts=True
             )
             last_element_counts = dict(
                 zip(last_unique_elements.tolist(), last_counts.tolist())
             )
 
-            print(f"[last {render_every}] element_counts: {last_element_counts}")
             print(
-                f"[last {render_every}] wrong spots: agent 1 -  {statistics.agent_1_wrong_spots_count[-render_every:].sum()}; agent 2 - {statistics.agent_2_wrong_spots_count[-render_every:].sum()}"
+                f"[last {STATISTICS_BATCH_SIZE}] element_counts: {last_element_counts}"
             )
-            user_pause()
+            print(
+                f"[last {STATISTICS_BATCH_SIZE}] wrong spots: agent 1 -  {statistics.agent_1_wrong_spots_count[-STATISTICS_BATCH_SIZE:].sum()}; agent 2 - {statistics.agent_2_wrong_spots_count[-STATISTICS_BATCH_SIZE:].sum()}"
+            )
+
+            games_to_skip = get_int_input(
+                "Enter count of games to skip",
+                max_value=NUMBER_OF_GAMES - i,
+                default_value=DEFAULT_GAMES_TO_SKIP,
+            )
 
 
-run_games(1000)
+run_games()
