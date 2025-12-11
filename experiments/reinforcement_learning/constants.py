@@ -27,7 +27,7 @@ class Reward(float, Enum):
     NOTHING = 0
 
     # For enums we need to have unique values
-    WRONG_SPOT = -0.9
+    WRONG_SPOT = -3
     TIE = 0.1
     WIN = 1
     LOSE = -1
@@ -35,15 +35,15 @@ class Reward(float, Enum):
 
 # HYPERPARAMETERS
 
-TOP_K = 2
+TOP_K = 5
 
 EPOCHS_PER_LEARNING = 5
 RL_ONE_MOVE_EPOCHS_PER_LEARNING = 1
 
-RL_ONE_MOVE_WRONG_SPOT_REWARD_SHIFT = -0.5
+RL_ONE_MOVE_WRONG_SPOT_REWARD_SHIFT = -1
 
 # It's a whole tic tac toe dataset in one batch (maximum 5 moves could be done)
-BATCH_SIZE = 3
+BATCH_SIZE = 2
 
 # Reward list, graduated by number of move. Last moves are the most serious ones, especially at the beginning
 # REWARD_SHIFTS_LIST = np.array([1, 0.5, 0.3, 0.25, 0.2])
@@ -54,8 +54,8 @@ REWARD_SHIFTS_LIST = np.array([0.3, 0.35, 0.4, 0.6, 1])
 
 WRONG_SPOT_REWARD_SHIFTS_LIST = np.array([0, 0, 0, 0, 1])
 
-# IS_END_GAME_ON_WRONG_SPOT = False
-IS_END_GAME_ON_WRONG_SPOT = True
+IS_END_GAME_ON_WRONG_SPOT = False
+# IS_END_GAME_ON_WRONG_SPOT = True
 
 
 class AgentName(StrEnum):

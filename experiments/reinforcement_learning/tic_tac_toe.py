@@ -30,7 +30,11 @@ def render_losses(losses: list[float]):
 # + Skip count of games
 # Show statistics in percentage
 # + Render statistics in graph
-# Test top 1 with higher LR
+# Test top 1 with higher LR. More top_k works better in long term
+# Test statistics for win type (line, cross etc.)
+# Test statistics for win moves count
+# Add separate graph for wrong choices when game is not ending
+# Add totally random choice with some chance
 
 nn_1 = NeuralNetwork(
     [
@@ -38,8 +42,8 @@ nn_1 = NeuralNetwork(
         {"input_size": 18, "output_size": 18, "activation": "tanh"},
         {"input_size": 18, "output_size": 9, "activation": "softmax"},
     ],
-    learning_rate=0.0001,
-    loss_name="log",
+    learning_rate=0.005,
+    loss_name="mse",
 )
 
 nn_2 = NeuralNetwork(
@@ -48,12 +52,13 @@ nn_2 = NeuralNetwork(
         {"input_size": 18, "output_size": 18, "activation": "tanh"},
         {"input_size": 18, "output_size": 9, "activation": "softmax"},
     ],
-    learning_rate=0.0001,
-    loss_name="log",
+    learning_rate=0.005,
+    loss_name="mse",
 )
 
-NUMBER_OF_GAMES = 100000
-DEFAULT_GAMES_TO_SKIP = 1000
+NUMBER_OF_GAMES = 1000000
+RENDER_EVERY = 100
+DEFAULT_GAMES_TO_SKIP = 10000
 STATISTICS_BATCH_SIZE = 1000
 
 
@@ -82,9 +87,6 @@ def run_games():
         print(agent_1.history)
         print(agent_2.history)
 
-        if i != 0 and i % 1000 == 0:
-            render_statistics(statistics, 100, 5000)
-
         run_game(agents, statistics)
 
         for agent in agents:
@@ -94,11 +96,15 @@ def run_games():
 
             agent.reset()
 
+        # Swap agents, it's a mutable operation
         agents.reverse()
 
         # user_pause()
 
         games_to_skip -= 1
+
+        if i != 0 and (i + 1) % RENDER_EVERY == 0:
+            render_statistics(statistics, RENDER_EVERY, 5000)
 
         if games_to_skip == 0 or i == NUMBER_OF_GAMES:
             print(f"Game {i + 1} results")
@@ -135,6 +141,8 @@ def run_games():
                 max_value=NUMBER_OF_GAMES - i,
                 default_value=DEFAULT_GAMES_TO_SKIP,
             )
+
+        # user_pause()
 
 
 run_games()
