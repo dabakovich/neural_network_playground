@@ -4,7 +4,7 @@ import numpy.typing as npt
 
 type Loss = Literal["mse", "log"]
 
-type Activator = Literal["linear", "relu", "sigmoid", "tanh", "softmax"]
+type Activator = Literal["linear", "relu", "leaky_relu", "sigmoid", "tanh", "softmax"]
 
 # type Vector = np.ndarray[np.float64, np._1DShapeT]
 type Vector = npt.NDArray

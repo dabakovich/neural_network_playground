@@ -6,6 +6,9 @@ from shared.random import rng
 from .types import Activator, LayerConfig, Loss, Matrix, Vector
 
 
+LEAKY_RELU_ALPHA = 0.01
+
+
 def build_layers(layer_configs: list[LayerConfig]):
     """
     Builds neural network layers with biases
@@ -24,12 +27,24 @@ def build_layers(layer_configs: list[LayerConfig]):
 
 
 def build_layer(layer_config: LayerConfig):
-    min_weight = -0.5
-    max_weight = 0.5
+    input_size = layer_config["input_size"]
+    output_size = layer_config["output_size"]
+    activation = layer_config.get("activation", "linear")
 
-    weights = (max_weight - min_weight) * rng.random(
-        (layer_config["output_size"], layer_config["input_size"])
-    ) + min_weight
+    # He initialization for ReLU
+    if activation in ("relu", "leaky_relu"):
+        std = np.sqrt(2 / input_size)
+        weights = rng.normal(0, std, (output_size, input_size))
+
+    # Xavier initialization for sigmoid/tanh
+    elif activation in ("sigmoid", "tanh"):
+        std = np.sqrt(1 / input_size)
+        weights = rng.normal(0, std, (output_size, input_size))
+
+    # Initialization for linear and other
+    else:
+        std = np.sqrt(2.0 / (input_size + output_size))
+        weights = rng.normal(0, std, (output_size, input_size))
 
     biases = np.zeros((layer_config["output_size"],))
 
@@ -79,6 +94,8 @@ def activate(input: Vector, activator: Activator) -> Vector:
         return input
     elif activator == "relu":
         return np.where(input > 0, input, 0)
+    elif activator == "leaky_relu":
+        return np.where(input > 0, input, LEAKY_RELU_ALPHA * input)
     elif activator == "sigmoid":
         return 1 / (1 + np.exp(-input))
     elif activator == "tanh":
@@ -102,9 +119,11 @@ def softmax_derivative(input: Vector) -> Matrix:
 
 def derivate(input: Vector, activator: Activator) -> Vector:
     if activator == "linear":
-        return input
+        return np.ones(input)
     if activator == "relu":
         return np.where(input > 0, 1, 0)
+    if activator == "leaky_relu":
+        return np.where(input > 0, 1, LEAKY_RELU_ALPHA)
     if activator == "sigmoid":
         # dy/dx (1 / (1 + e^(-x))) = x * (1 - x)
         return input * (1 - input)
