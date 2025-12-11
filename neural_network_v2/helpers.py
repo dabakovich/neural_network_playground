@@ -85,7 +85,8 @@ def activate(input: Vector, activator: Activator) -> Vector:
         return np.tanh(input)
     if activator == "softmax":
         # logging.debug(f"[softmax] input:\n{input}")
-        exps = np.exp(input)
+        max_value = input.max()
+        exps = np.exp(input - max_value)
         return exps / np.sum(exps)
 
     raise ValueError("Unknown activator function")
