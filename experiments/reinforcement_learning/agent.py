@@ -29,7 +29,7 @@ class TicTacToeAgent:
         board: np.ndarray,
         top_k=TOP_K,
         random_value_p=RANDOM_VALUE_PROBABILITY,
-    ):
+    ) -> int:
         """
         Options for choosing busy cell
         - end game as regular lose
@@ -43,7 +43,7 @@ class TicTacToeAgent:
         if random_value_p > 0:
             random_v = rng.random()
             if random_v < random_value_p:
-                selected = rng.integers(low=0, high=8)
+                selected = int(rng.integers(low=0, high=8))
                 logging.debug(f"[TicTacToeAgent] random selected: {selected + 1}")
                 return selected
 
