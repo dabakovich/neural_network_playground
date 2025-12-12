@@ -30,13 +30,14 @@ def render_losses(losses: list[float]):
 # + Skip count of games
 # Show statistics in percentage
 # + Render statistics in graph
-# Test top 1 with higher LR. More top_k works better in long term
-# Test statistics for win type (line, cross etc.)
+# Test statistics for win type (vertical line, horizontal line, cross etc.)
 # Test statistics for win moves count
-# Add separate graph for wrong choices when game is not ending
-# Add totally random choice with some chance
+# + Add separate graph for wrong choices when game is not ending
+# + Add totally random choice with some chance
 # Add max attempts for wrong spots
 # Add controls on plot
+# Add tests for model
+# Add save/load nn methods
 
 nn_1 = NeuralNetwork(
     [
