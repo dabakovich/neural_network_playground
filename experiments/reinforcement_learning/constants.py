@@ -29,16 +29,17 @@ class Reward(float, Enum):
     # For enums we need to have unique values
     WRONG_SPOT = -3
     TIE = 0.1
-    WIN = 1
+    WIN = 2
     LOSE = -1
 
 
 # HYPERPARAMETERS
 
-TOP_K = 5
+TOP_K = 4
+RANDOM_VALUE_PROBABILITY = 0.2
 
 EPOCHS_PER_LEARNING = 5
-RL_ONE_MOVE_EPOCHS_PER_LEARNING = 1
+RL_ONE_MOVE_EPOCHS_PER_LEARNING = 2
 
 RL_ONE_MOVE_WRONG_SPOT_REWARD_SHIFT = -1
 

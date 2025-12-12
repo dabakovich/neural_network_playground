@@ -35,6 +35,8 @@ def render_losses(losses: list[float]):
 # Test statistics for win moves count
 # Add separate graph for wrong choices when game is not ending
 # Add totally random choice with some chance
+# Add max attempts for wrong spots
+# Add controls on plot
 
 nn_1 = NeuralNetwork(
     [
@@ -42,7 +44,7 @@ nn_1 = NeuralNetwork(
         {"input_size": 18, "output_size": 18, "activation": "tanh"},
         {"input_size": 18, "output_size": 9, "activation": "softmax"},
     ],
-    learning_rate=0.005,
+    learning_rate=0.01,
     loss_name="mse",
 )
 
@@ -52,7 +54,7 @@ nn_2 = NeuralNetwork(
         {"input_size": 18, "output_size": 18, "activation": "tanh"},
         {"input_size": 18, "output_size": 9, "activation": "softmax"},
     ],
-    learning_rate=0.005,
+    learning_rate=0.01,
     loss_name="mse",
 )
 

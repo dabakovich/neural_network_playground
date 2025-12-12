@@ -4,6 +4,7 @@ import numpy as np
 from experiments.reinforcement_learning.constants import (
     BATCH_SIZE,
     EPOCHS_PER_LEARNING,
+    RANDOM_VALUE_PROBABILITY,
     RL_ONE_MOVE_EPOCHS_PER_LEARNING,
     TOP_K,
 )
@@ -23,7 +24,12 @@ class TicTacToeAgent:
         self.nn = nn
         self.history = History()
 
-    def select_spot_index(self, board: np.ndarray, top_k=TOP_K):
+    def select_spot_index(
+        self,
+        board: np.ndarray,
+        top_k=TOP_K,
+        random_value_p=RANDOM_VALUE_PROBABILITY,
+    ):
         """
         Options for choosing busy cell
         - end game as regular lose
@@ -32,14 +38,23 @@ class TicTacToeAgent:
         """
         output = self.nn.calculate_output(board.flatten())
 
+        logging.debug(f"[TicTacToeAgent] output: {output}")
+
+        if random_value_p > 0:
+            random_v = rng.random()
+            if random_v < random_value_p:
+                selected = rng.integers(low=0, high=8)
+                logging.debug(f"[TicTacToeAgent] random selected: {selected + 1}")
+                return selected
+
         idx = np.argpartition(output, -top_k)[-top_k:]
 
         values = output[idx]
         probabilities = values / values.sum()
 
-        selected: int = rng.choice(idx, p=probabilities)
+        selected = rng.choice(idx, p=probabilities)
 
-        logging.debug(f"[TicTacToeAgent] output: {output}, selected: {selected + 1}")
+        logging.debug(f"[TicTacToeAgent] choice selected: {selected + 1}")
 
         return selected
 
